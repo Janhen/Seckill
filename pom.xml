@@ -47,8 +47,6 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 
-
-		<!-- 引入 thymeleaf 模板 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
