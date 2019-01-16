@@ -1,24 +1,11 @@
 package com.janhen.seckill.vo;
 
 import com.janhen.seckill.pojo.OrderInfo;
+import lombok.Data;
 
-public class OrderDetailVo {
-	private GoodsVo   goods;
+@Data
+public class OrderDetailVO {
+	private GoodsVO   goods;
 	private OrderInfo order;
 	
-	public GoodsVo getGoods() {
-		return goods;
-	}
-	public void setGoods(GoodsVo goods) {
-		this.goods = goods;
-	}
-	public OrderInfo getOrder() {
-		return order;
-	}
-	public void setOrder(OrderInfo order) {
-		this.order = order;
-	}
-	
-	
-
 }

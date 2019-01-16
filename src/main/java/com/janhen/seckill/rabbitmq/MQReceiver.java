@@ -1,14 +1,13 @@
 package com.janhen.seckill.rabbitmq;
 
+import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.redis.RedisService;
-import com.janhen.seckill.service.GoodsService;
-import com.janhen.seckill.service.OrderService;
-import com.janhen.seckill.service.SeckillService;
-import com.janhen.seckill.util.WebUtil;
-import com.janhen.seckill.vo.GoodsVo;
-import com.janhen.seckill.pojo.SeckillOrder;
+import com.janhen.seckill.service.impl.GoodsServiceImpl;
+import com.janhen.seckill.service.impl.OrderServiceImpl;
+import com.janhen.seckill.service.impl.SeckillServiceImpl;
+import com.janhen.seckill.util.JSONUtil;
+import com.janhen.seckill.vo.GoodsVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +29,13 @@ public class MQReceiver {
 	RedisService redisService;
 	
 	@Autowired
-	GoodsService goodsService;
+	GoodsServiceImpl goodsServiceImpl;
 	
 	@Autowired
-	OrderService orderService;
+	OrderServiceImpl orderServiceImpl;
 	
 	@Autowired
-	SeckillService seckillService;
+	SeckillServiceImpl seckillService;
 	
 	/**
 	 * Direct 模式 ： 交换机 Exchange
@@ -45,18 +44,18 @@ public class MQReceiver {
 	public void receive(String message) {
 		log.info("receive message : " + message);
 		
-		SeckillMessage seckillMessage = WebUtil.stringToBean(message, SeckillMessage.class);
+		SeckillMessage seckillMessage = JSONUtil.stringToBean(message, SeckillMessage.class);
 		SeckillUser user = seckillMessage.getUser();
 		long goodsId = seckillMessage.getGoodsId();
 		
-		GoodsVo goods = goodsService.selectGoodsVoByGoodsId(goodsId);
+		GoodsVO goods = goodsServiceImpl.selectGoodsVoByGoodsId(goodsId);
 		Integer stock = goods.getStockCount();
 		if (stock == null || stock <= 0) {
 			return;
 		}
 		
 		
-		SeckillOrder order = orderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
+		SeckillOrder order = orderServiceImpl.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
 		if (order != null) {
 			return;
 		}

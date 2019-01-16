@@ -1,14 +1,15 @@
 package com.janhen.seckill.controller;
 
 import com.alibaba.druid.util.StringUtils;
+import com.janhen.seckill.common.SeckillStatusEnum;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.redis.GoodsKey;
 import com.janhen.seckill.redis.RedisService;
-import com.janhen.seckill.result.ResultVO;
-import com.janhen.seckill.service.GoodsService;
-import com.janhen.seckill.service.SeckillUserService;
-import com.janhen.seckill.vo.GoodsDetailVo;
-import com.janhen.seckill.vo.GoodsVo;
+import com.janhen.seckill.common.ResultVO;
+import com.janhen.seckill.service.IGoodsService;
+import com.janhen.seckill.service.ISeckillUserService;
+import com.janhen.seckill.vo.GoodsDetailVO;
+import com.janhen.seckill.vo.GoodsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -25,226 +26,189 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Controller
-@RequestMapping("/goods")
+@RequestMapping("/goods/")
 @Slf4j
 public class GoodsController {
 	
 	@Autowired
-	SeckillUserService userService;
-	
+	ISeckillUserService userService;
+
 	@Autowired
-    RedisService redisService;
-	
+	IGoodsService iGoodsService;
+
 	@Autowired
-	GoodsService goodsService;
-	
-	// mananul render need  viewResolver & context
+	RedisService redisService;
+
 	@Autowired
-	ThymeleafViewResolver viewResolver;
+	ThymeleafViewResolver viewResolver;  // manual render need  viewResolver & context
 	
 	@Autowired
 	ApplicationContext applicationContext;
 	
 	/**
-	 * 页面缓存 ：手动渲染返回页面, 从缓存中取
+	 * 页面缓存：手动渲染返回页面, 从缓存中取
 	 */
-	@RequestMapping(value="/to_list", produces="text/html;charset=utf-8")
+	@RequestMapping(value="to_list", produces="text/html;charset=utf-8")
 	@ResponseBody
-	public String list(Model model, SeckillUser user,
-			HttpServletRequest request, HttpServletResponse response) {
+	public String list(Model model, SeckillUser user, HttpServletRequest request, HttpServletResponse response) {
 		model.addAttribute("user", user);
 		
-		// BR0.1. cache has
+		// 1.take html file from cache
 		String html = redisService.get(GoodsKey.getGoodsList, "", String.class);
 		if (!StringUtils.isEmpty(html)) {
 			return html;
 		}
-		
-		List<GoodsVo> goodsList = goodsService.selectGoodsVoList();
+
+		// 2.view resolver to render model to html and put into cache
+		List<GoodsVO> goodsList = iGoodsService.selectGoodsVoList();
 		model.addAttribute("goodsList", goodsList);
-		
-		// Core. manaul resolve model to view
 		SpringWebContext ctx = new SpringWebContext(request,response,
-				request.getServletContext(),request.getLocale(), model.asMap(), applicationContext );
+				request.getServletContext(),request.getLocale(), model.asMap(), applicationContext);
 		html = viewResolver.getTemplateEngine().process("goods_list", ctx);
 		
 		if (!StringUtils.isEmpty(html)) {
 			redisService.set(GoodsKey.getGoodsList, "", html);
 		}
-		
 		return html;
 	}
 	
 	/**
 	 * 页面静态化,前后端分离 ：异步获取填充
 	 */
-	@RequestMapping(value="/detail/{goodsId}")
+	@RequestMapping(value="detail/{goodsId}")
 	@ResponseBody
-	public ResultVO<GoodsDetailVo> detail00(SeckillUser user,
-                                            @PathVariable("goodsId") Long goodsId) {
+	public ResultVO<GoodsDetailVO> detail00(SeckillUser user, @PathVariable("goodsId") Long goodsId) {
 
 		log.info("param:{}", goodsId);
-		GoodsVo goods = goodsService.selectGoodsVoByGoodsId(goodsId);
+		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		
 		long startTime = goods.getStartDate().getTime();
 		long endTime = goods.getEndDate().getTime();
 		long curTime = System.currentTimeMillis();
-		
+
 		int seckillStatus = 0;
 		int remainSeconds = 0;
-		
 		if (curTime < startTime) {
-			seckillStatus = 0;
+			seckillStatus = SeckillStatusEnum.NOT_BEGIN.getCode();
 			remainSeconds = (int) ((startTime - curTime) / 1000);
 		} else if (curTime > endTime) {
-			seckillStatus = 2;
+			seckillStatus = SeckillStatusEnum.OVER.getCode();
 			remainSeconds = -1;
 		} else {
-			seckillStatus = 1;
+			seckillStatus = SeckillStatusEnum.ON.getCode();
 			remainSeconds = 0;
 		}
 		
-		GoodsDetailVo goodsDetailVo = new GoodsDetailVo();
-		goodsDetailVo.setGoods(goods);
-		goodsDetailVo.setUser(user);
-		goodsDetailVo.setSeckillStatus(seckillStatus);
-		goodsDetailVo.setRemainSeconds(remainSeconds);
-		
-		return ResultVO.success(goodsDetailVo);
+		GoodsDetailVO goodsDetailVO = new GoodsDetailVO();
+		goodsDetailVO.setGoods(goods);
+		goodsDetailVO.setUser(user);
+		goodsDetailVO.setSeckillStatus(seckillStatus);
+		goodsDetailVO.setRemainSeconds(remainSeconds);
+		return ResultVO.success(goodsDetailVO);
 	}
 	
 	
 	
-	
-	
-	
-	
-	
-	//  depred
-	
 	/**
-	 * Ver0. 页面缓存 ：手动渲染页面，放入缓存中
-	 *//*
-	@RequestMapping(value="/to_detail0/{goodsId}", produces="text/html")
+	 * 页面缓存：手动渲染页面，放入缓存中
+	 */
+	@RequestMapping(value="to_detail_page/{goodsId}", produces="text/html")
 	@ResponseBody
-	public String detail0(Model model, SeckillUser user,
+	public String detailPage(Model model, SeckillUser user,
 			@PathVariable("goodsId") Long goodsId,
 			HttpServletRequest request, HttpServletResponse response) {
-		// BR1. cache aleady have
+		// 1.take from cache
 		String html = redisService.get(GoodsKey.getGoodsDetail, "" + goodsId, String.class);
 		if (!StringUtils.isEmpty(html)) {
 			return html;
 		}
-		
-		GoodsVo goods = goodsService.selectGoodsVoByGoodsId(goodsId);
+
+		// 2. take from db and render data to html, put html file into cache
+		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		model.addAttribute("user", user);
 		model.addAttribute("goods", goods);
 		
 		int seckillStatus = 0;
 		int remainSeconds = 0;
-		
 		long startTime = goods.getStartDate().getTime();
 		long endTime = goods.getEndDate().getTime();
 		long curTime = System.currentTimeMillis();
-		
 		if (curTime < startTime) {
-			// br1. seckill is not start
-			seckillStatus = 0;
+			seckillStatus = SeckillStatusEnum.NOT_BEGIN.getCode();
 			remainSeconds = (int) ((startTime - curTime) / 1000);
 		} else if (curTime > endTime) {
-			// br2. seckill is over
-			seckillStatus = 2;
+			seckillStatus = SeckillStatusEnum.OVER.getCode();
 			remainSeconds = -1;
 		} else {
-			seckillStatus = 1;
+			seckillStatus = SeckillStatusEnum.ON.getCode();
 			remainSeconds = 0;
 		}
 		model.addAttribute("seckillStatus", seckillStatus);
 		model.addAttribute("remainSeconds", remainSeconds);
 		
-		
-		// Core. manaual resolve
+		// Core. resolve manually
 		SpringWebContext ctx = new SpringWebContext(request, response, request.getServletContext(), 
 				request.getLocale(), model.asMap(), applicationContext);
 		html = viewResolver.getTemplateEngine().process("goods_detail", ctx);
-		
 		if (!StringUtils.isEmpty(html)) {
 			redisService.set(GoodsKey.getGoodsDetail, "" + goodsId, html);
-			
 		}
 		return html;
-	}*/
-	
-	
-	
-	
+	}
 	
 	
 	/**
-	 * Ver1. 返回页面并填充数据
+	 * 原始商品列表
 	 */
-	/*@RequestMapping(value = "/to_list2")
-	public String list2(Model model, 
-			SeckillUser user) {
-
-		List<GoodsVo> goodsList = goodsService.selectGoodsVoList();
-		
+	@RequestMapping(value = "to_list_origin")
+	public String list2(Model model, SeckillUser user) {
+		List<GoodsVO> goodsList = iGoodsService.selectGoodsVoList();
 		model.addAttribute("user", user);
 		model.addAttribute("goodsList", goodsList);
 		return "goods_list";
-	}*/
+	}
 	
 	
 	/**
-	 * Ver2. 返回页面并填充数据
+	 * 原始商品详情
 	 */
-	/*@RequestMapping(value="/to_detail2/{goodsId}")
-	public String toDetail(Model model, SeckillUser user,
-			@PathVariable("goodsId") Long goodsId) {
+	@RequestMapping(value="to_detail_origin/{goodsId}")
+	public String toDetail(Model model, SeckillUser user, @PathVariable("goodsId") Long goodsId) {
+
+		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		int seckillStatus = 0;
 		int remainSeconds = 0;
-		
-		GoodsVo goods = goodsService.selectGoodsVoByGoodsId(goodsId);
 		long startTime = goods.getStartDate().getTime();
 		long endTime = goods.getEndDate().getTime();
 		long curTime = System.currentTimeMillis();
 		
 		if (curTime < startTime) {
-			// BR1. seckill not start
-			seckillStatus = 0;
+			seckillStatus = SeckillStatusEnum.NOT_BEGIN.getCode();
 			remainSeconds = (int) ((startTime - curTime) / 1000);
 		} else if (curTime > endTime) {
-			// BR2. sekill over
-			seckillStatus = 2;
+			seckillStatus = SeckillStatusEnum.OVER.getCode();
 			remainSeconds = -1;
 		} else {
-			// BR. seckill running
-			seckillStatus = 1;
+			seckillStatus = SeckillStatusEnum.ON.getCode();
 			remainSeconds = 0;
 		}
-		
 		model.addAttribute("user", user);
 		model.addAttribute("goods", goods);
 		model.addAttribute("seckillStatus", seckillStatus);
 		model.addAttribute("remainSeconds", remainSeconds);
-		
 		return "goods_detail";
-	}*/
-	
-	
-	
-	
-	
-	
-	/*@CookieValue(value=SeckillUserService.COOKIE_NAME_TOKEN, required=false) String cookieToken,
-		@RequestParam(value=SeckillUserService.COOKIE_NAME_TOKEN, required=false) String paramToken
-		// E0
-		if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) { return "login"; }
-		
-		String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-		SeckillUser user = userService.getByToken(token);
-		
-		model.addAttribute("user", user);
-		return "goods_list";*/
+	}
 
+//	public String ddd(@CookieValue(value=SeckillUserService.COOKIE_NAME_TOKEN, required=false) String cookieToken,
+//		@RequestParam(value=SeckillUserService.COOKIE_NAME_TOKEN, required=false) String paramToken, Model model) {
+//		if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
+//			return "login";
+//		}
+//
+//		String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
+//		SeckillUser user = iSeckillUserService.getByToken(token);
+//
+//		model.addAttribute("user", user);
+//		return "goods_list";
+//	}
 }

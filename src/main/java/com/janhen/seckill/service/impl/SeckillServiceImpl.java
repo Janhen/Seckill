@@ -1,21 +1,16 @@
-package com.janhen.seckill.service;
+package com.janhen.seckill.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
+import com.janhen.seckill.common.SeckillOrderStatusEnum;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.redis.RedisService;
 import com.janhen.seckill.redis.SeckillKey;
+import com.janhen.seckill.service.ISeckillService;
 import com.janhen.seckill.util.MD5Util;
 import com.janhen.seckill.util.UUIDUtil;
-import com.janhen.seckill.vo.GoodsVo;
-import com.janhen.seckill.pojo.OrderInfo;
-import com.janhen.seckill.pojo.SeckillOrder;
-import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.redis.RedisService;
-import com.janhen.seckill.redis.SeckillKey;
-import com.janhen.seckill.util.MD5Util;
-import com.janhen.seckill.util.UUIDUtil;
+import com.janhen.seckill.vo.GoodsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,25 +23,23 @@ import java.util.Random;
 
 @Service
 @Transactional(readOnly=true)
-public class SeckillService {
+public class SeckillServiceImpl implements ISeckillService {
 	
 	@Autowired
-	GoodsService goodsService;
+	GoodsServiceImpl goodsServiceImpl;
 	
 	@Autowired
-	OrderService orderService;
+	OrderServiceImpl orderServiceImpl;
 	
 	@Autowired
     RedisService redisService;
 
 	@Transactional
-	public OrderInfo seckill(SeckillUser user, GoodsVo goods) {
-		// desc stock by goods.id
-		boolean isSuccess = goodsService.descStock(goods);
-		
+	public OrderInfo seckill(SeckillUser user, GoodsVO goods) {
+		boolean isSuccess = goodsServiceImpl.descStock(goods);
 		if (isSuccess) {
 			// create orderinfo by user, goodsVo
-			OrderInfo orderInfo = orderService.createOrder(user, goods);
+			OrderInfo orderInfo = orderServiceImpl.createOrder(user, goods);
 			
 			return orderInfo;
 		} else {
@@ -59,7 +52,6 @@ public class SeckillService {
 		redisService.set(SeckillKey.isGoodsOver, "" + goodsId, true);
 	}
 
-	/** #. path */
 	public String generateSeckillPath(SeckillUser user, Long goodsId) {
 		String seckillPath = MD5Util.md5(UUIDUtil.uuid()) + System.currentTimeMillis() % 1000;
 		redisService.set(SeckillKey.getSeckillPath, "" + user.getId() + "_" + goodsId, seckillPath);
@@ -70,17 +62,15 @@ public class SeckillService {
 		if (user == null || goodsId == null || StringUtils.isEmpty(path)) {
 			return false;
 		}
-		
 		String cachedPath = redisService.get(SeckillKey.getSeckillPath, String.valueOf(user.getId() + "_" + goodsId), String.class);
-		
 		return path.equals(cachedPath);
 	}
 
-	/** #. verfiycode */
 	public BufferedImage generateVerfiyCodeImg(SeckillUser user, Long goodsId) {
-		if (user == null || goodsId == null) 
+		if (user == null) {
 			return null;
-		
+		}
+
 		// create the image in memory
 		int width = 80, height = 32;
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -116,10 +106,8 @@ public class SeckillService {
 		return image;
 	}
 	
-	/**
-	 * + - * 
-	 */
 	private static char[] ops = new char[] {'+', '-', '*'};
+
 	private String generateVerifyCode(Random rdm) {
 		int num1 = rdm.nextInt(10);
 	    int num2 = rdm.nextInt(10);
@@ -131,7 +119,7 @@ public class SeckillService {
 	}
 	
 	/**
-	 * ScriptEngine
+	 * todo algorithm implement
 	 */
 	private static int calc(String exp) {
 		try {
@@ -144,47 +132,38 @@ public class SeckillService {
 		}
 	}
 	
-
 	public boolean checkVerifyCode(SeckillUser user, Long goodsId, Integer verfiyCode) {
-		if (user == null || goodsId == null || verfiyCode == null) 
-			return false;
-		
-		Integer cachedCode = redisService.get(SeckillKey.getSeckillVerifyCode, user.getId() + "," + goodsId, Integer.class);
-		if (cachedCode == null || cachedCode - verfiyCode != 0) {
+		if (user == null || goodsId == null || verfiyCode == null) {
 			return false;
 		}
-		
+		Integer cachedCode = redisService.get(SeckillKey.getSeckillVerifyCode, user.getId() + "," + goodsId, Integer.class);
+		if (cachedCode == null || cachedCode != verfiyCode) {
+			return false;
+		}
 		// delete cache
 		redisService.del(SeckillKey.getSeckillVerifyCode, user.getId() + "," + goodsId);
-		
 		return true;
 	}
-	
-	
 
+	// three condition:
+	//  - P1: get good
+	//  - P2: 秒杀结束
+	//  - P3: 排队中
 	public Long getSeckillResult(Long userId, Long goodsId) {
 		if (goodsId == null) {
 			return -1L;
 		}
-		
-		SeckillOrder order = orderService.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
+		SeckillOrder order = orderServiceImpl.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
 		if (order != null) {
-			// BR1. success
 			return order.getId();
-		} else if (getGoodsOver(goodsId)) {
-			
-			// BR2. is over
-			return -1L;
-			
+		} else if (checkGoodsIsOver(goodsId)) {
+			return SeckillOrderStatusEnum.OVER.getCode();
 		} else {
-			// BR. wait on queue
-			return 0L;
+			return SeckillOrderStatusEnum.WAIT_ON_QUEUE.getCode();
 		}
 	}
 	
-	
-	
-	private boolean getGoodsOver(Long goodsId) {
+	private boolean checkGoodsIsOver(Long goodsId) {
 		return redisService.exists(SeckillKey.isGoodsOver, "" + goodsId);
 	}
 

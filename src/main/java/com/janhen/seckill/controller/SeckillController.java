@@ -1,20 +1,21 @@
 package com.janhen.seckill.controller;
 
 import com.janhen.seckill.interceptor.AccessLimit;
+import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.rabbitmq.MQSender;
 import com.janhen.seckill.rabbitmq.SeckillMessage;
-import com.janhen.seckill.redis.AccessKey;
 import com.janhen.seckill.redis.GoodsKey;
 import com.janhen.seckill.redis.RedisService;
-import com.janhen.seckill.result.CodeMsg;
-import com.janhen.seckill.result.ResultVO;
-import com.janhen.seckill.service.GoodsService;
-import com.janhen.seckill.service.OrderService;
-import com.janhen.seckill.service.SeckillService;
-import com.janhen.seckill.service.SeckillUserService;
-import com.janhen.seckill.vo.GoodsVo;
+import com.janhen.seckill.common.ResultEnum;
+import com.janhen.seckill.common.ResultVO;
+import com.janhen.seckill.service.IGoodsService;
+import com.janhen.seckill.service.IOrderService;
+import com.janhen.seckill.service.ISeckillService;
+import com.janhen.seckill.service.ISeckillUserService;
+import com.janhen.seckill.vo.GoodsVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -32,203 +33,191 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
-@RequestMapping("/seckill")
+@RequestMapping("/seckill/")
+@Slf4j
 public class SeckillController implements InitializingBean{
 	
 	@Autowired
-	SeckillUserService userService;
+	ISeckillUserService iSeckillUserService;
 	
 	@Autowired
-    RedisService redisService;
+	IGoodsService iGoodsService;
 	
 	@Autowired
-	GoodsService goodsService;
-	
-	@Autowired 
-	OrderService orderService;
+	IOrderService iOrderService;
 	
 	@Autowired
-	SeckillService seckillService;
+	ISeckillService iSeckillService;
+
+	@Autowired
+	RedisService redisService;
 
 	@Autowired
     MQSender sender;
 
+	// ★★ reduce redis cache access
 	private Map<Long, Boolean> localOverMap = new ConcurrentHashMap<>();
 	
-	// put the goods stock into cache and init localOverMap
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		// ★★ 缓存预加载
-		List<GoodsVo> goodsList = goodsService.selectGoodsVoList();
+		// ★★ cache preload and init map
+		List<GoodsVO> goodsList = iGoodsService.selectGoodsVoList();
 		if (goodsList != null) {
-			for (GoodsVo goods : goodsList) {
+			for (GoodsVO goods : goodsList) {
 				redisService.set(GoodsKey.getSeckillGoodsStock, "" + goods.getId(), goods.getStockCount());
 				localOverMap.put(goods.getId(), false);
 			}
 		}
 		return ;
 	}
-	
 
-	@RequestMapping(value="/path", method=RequestMethod.GET)
+	@RequestMapping(value="verifyCode")
 	@ResponseBody
-	@AccessLimit(seconds=5, maxCount=5, needLogin=true)
+	public ResultVO<String> getVerfiyCode(HttpServletResponse response, SeckillUser user, @RequestParam("goodsId") Long goodsId) {
+		BufferedImage image = iSeckillService.generateVerfiyCodeImg(user, goodsId);
+		try (ServletOutputStream out = response.getOutputStream()) {
+			// response 写回
+			ImageIO.write(image, "JPEG", out);
+			out.flush();
+			return null;
+		} catch (IOException e) {
+			log.error("【获取秒杀验证码】", e);
+			return ResultVO.error(ResultEnum.SECKILL_FAIL);
+		}
+	}
+
+	@RequestMapping(value="path", method=RequestMethod.GET)
+	@ResponseBody
+	@AccessLimit(seconds=60, maxCount=60, needLogin=true)
 	public ResultVO<String> getSeckillPath(HttpServletRequest request, SeckillUser user,
                                            @RequestParam("goodsId") Long goodsId,
                                            @RequestParam("verifyCode") Integer verfiyCode) {
-		/*if (user == null) {
-			return ResultVO.error(CodeMsg.SESSION_ERROR);
-		}*/
+		// 获取秒杀地址
+		//    - traffic restrictions: redis
+		//    - 验证码正确返回地址  ⇒ prevent interface brush
+		if (user == null) {
+			return ResultVO.error(ResultEnum.SESSION_ERROR);
+		}
 		
-		// prevent interface brush
 		String key = request.getRequestURI() + "_" + user.getId();
-		Integer accessCount = redisService.get(AccessKey.access, key, Integer.class);
-		if (accessCount == null) {
-			redisService.set(AccessKey.access, key, 1);
-		} else if (accessCount < 5) {
-			redisService.incr(AccessKey.access, key);
-		} else {
-			return ResultVO.error(CodeMsg.ACCESS_LIMIT_REACHED);
-		}
+		// ★★ 1.redis implement traffic restrictions
 
-		// check the verify code
-		boolean isValid = seckillService.checkVerifyCode(user, goodsId, verfiyCode);
+
+		// 2.check the verify code
+		boolean isValid = iSeckillService.checkVerifyCode(user, goodsId, verfiyCode);
 		if (!isValid) {
-			return ResultVO.error(CodeMsg.REQUEST_ILLEGAL);
+			log.error("【获取秒杀路径】验证码不正确");
+			return ResultVO.error(ResultEnum.REQUEST_ILLEGAL);
 		}
-		String seckillPath = seckillService.generateSeckillPath(user, goodsId);
+		// 3.return correct seckill url
+		String seckillPath = iSeckillService.generateSeckillPath(user, goodsId);
 		return ResultVO.success(seckillPath);
 	}
 	
-	@RequestMapping(value="/{path}/do_seckill", method=RequestMethod.POST)
+	@RequestMapping(value="{path}/do_seckill", method=RequestMethod.POST)
 	@ResponseBody
 	public ResultVO<Integer> seckill0(Model model, SeckillUser user,
-									  @PathVariable("path") String path,
-									  @RequestParam("goodsId") Long goodsId) {
+									  @PathVariable("path") String path, @RequestParam("goodsId") Long goodsId) {
+		// 秒杀:
+		//   - path judge
+		//   - good stock judge
+		//   - reduce stock from redis
+		//   - restrict one person only can seckill one good
+		//   - message queue  ⇒  异步调用
 		model.addAttribute("user", user);
-		if (user == null) { return ResultVO.error(CodeMsg.SESSION_ERROR); }
-		
-		// check path from redis cache
-		boolean isValid = seckillService.checkPath(user, goodsId, path);
-		if (!isValid) {
-			return ResultVO.error(CodeMsg.REQUEST_ILLEGAL);
+		if (user == null) {
+			return ResultVO.error(ResultEnum.SESSION_ERROR);
 		}
 		
-		// memory 
-		boolean over = localOverMap.get(goodsId);
-		if (over) {
-			return ResultVO.error(CodeMsg.SECKILL_OVER);
+		// 1.check seckill path from redis cache
+		boolean isCorrect = iSeckillService.checkPath(user, goodsId, path);
+		if (!isCorrect) {
+			log.error("【秒杀】路径非法");
+			return ResultVO.error(ResultEnum.REQUEST_ILLEGAL);
+		}
+
+		// 2.★judge stock whether or not empty
+		boolean isOver = localOverMap.get(goodsId);
+		if (isOver) {
+			log.error("【秒杀】秒杀结束");
+			return ResultVO.error(ResultEnum.SECKILL_OVER);
 		}
 		
-		// decr from redis cache
+		// 3.decr stock from redis cache
 		Long stock = redisService.decr(GoodsKey.getSeckillGoodsStock, "" + goodsId);
 		if (stock < 0) {
 			localOverMap.put(goodsId, true);
-			return ResultVO.error(CodeMsg.SECKILL_OVER);
+			log.error("【秒杀】秒杀结束");
+			return ResultVO.error(ResultEnum.SECKILL_OVER);
 		}
 		
-		// check user already have seckill
-		SeckillOrder order = orderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
+		// 4.check user already have seckill
+		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
 		if (order != null) {
-			return ResultVO.error(CodeMsg.SECKILL_REPEATE);
+			log.error("【秒杀】秒杀重复,userId:{},goodsId{}", user.getId(), goodsId);
+			return ResultVO.error(ResultEnum.SECKILL_REPEATE);
 		}
 		
-		// put into queue 
+		// 5.put into message queue
 		SeckillMessage message = new SeckillMessage(user, goodsId);
 		sender.send(message);
-		
 		return ResultVO.success(0);
-		
-		
-		
-		
-		/*// Core 
-		// BR1. stock is empty
-		GoodsVo goods = goodsService.selectGoodsVoByGoodsId(goodsId);
-		if (goods.getStockCount() <= 0) {
-			return ResultVO.error(CodeMsg.SECKILL_FAIL);
-		}
-		
-		// BR2. user already have seckill
-		SeckillOrder seckillOrder = orderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
-		if (seckillOrder != null) {
-			return ResultVO.error(CodeMsg.SECKILL_REPEATE);
-		}
-		
-		// BR
-		OrderInfo orderInfo = seckillService.seckill(user, goods);
-		
-		return ResultVO.success(orderInfo);*/
 	}
 	
-	@RequestMapping(value="/verifyCode")
+	@RequestMapping(value="result")
 	@ResponseBody
-	public ResultVO<String> getVerfiyCode(HttpServletResponse response, SeckillUser user,
-										  @RequestParam("goodsId") Long goodsId) {
-		/*if (user == null) {
-			return ResultVO.error(CodeMsg.SESSION_ERROR);
-		}*/
-		
-		BufferedImage image = seckillService.generateVerfiyCodeImg(user, goodsId);
-		
-		try (ServletOutputStream out = response.getOutputStream()) {
-			
-			ImageIO.write(image, "JPEG", out);
-			out.flush();
-			
-			// ajax 风格调用
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return ResultVO.error(CodeMsg.SECKILL_FAIL);
-		} 
-	}
-
-	@RequestMapping(value="/result")
-	@ResponseBody
-	public ResultVO<Long> result(SeckillUser user,
-								 @RequestParam("goodsId") Long goodsId ) {
+	public ResultVO<Long> result(SeckillUser user, @RequestParam("goodsId") Long goodsId ) {
 		if (user == null) {
-			return ResultVO.error(CodeMsg.SESSION_ERROR);
+			return ResultVO.error(ResultEnum.SESSION_ERROR);
 		}
-		
-		Long orderId = seckillService.getSeckillResult(user.getId(), goodsId);
-		
+		Long orderId = iSeckillService.getSeckillResult(user.getId(), goodsId);
 		return ResultVO.success(orderId);
 	}
 	
-	
-	
-	
-	
-	/*// raw access
-	@RequestMapping(value="/do_seckill1")
+
+	// raw access
+	@RequestMapping(value="do_seckill_origin_page")
 	public String seckill(Model model,SeckillUser user,
 			@RequestParam("goodsId") Long goodsId) {
 		if (user == null) { return "login"; }
 		
-		GoodsVo goods = goodsService.selectGoodsVoByGoodsId(goodsId);
-		// BR1. stock is empty
+		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
+		// stock is empty
 		if (goods.getStockCount() <= 0) {
-			model.addAttribute("errormsg", CodeMsg.SECKILL_OVER.getMsg());
+			model.addAttribute("errormsg", ResultEnum.SECKILL_OVER.getMsg());
 			return "seckill_fail";
 		}
-		
-		SeckillOrder order = orderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
-		// BR2. user have a seckill then seckill fail
+
+		// user have a seckill then seckill fail
+		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
 		if (order != null) {
-			model.addAttribute("errormsg", CodeMsg.SECKILL_REPEATE.getMsg());
+			model.addAttribute("errormsg", ResultEnum.SECKILL_REPEATE.getMsg());
 			return "seckill_fail";
 		}
 		
 		// BR desc stock and insert seckillorder
-		OrderInfo orderInfo = seckillService.seckill(user, goods);
-		
+		OrderInfo orderInfo = iSeckillService.seckill(user, goods);
 		model.addAttribute("user", user);
 		model.addAttribute("orderInfo", orderInfo);
 		model.addAttribute("goods", goods);
-		
 		return "order_detail";
-	}*/
+	}
 
+	@RequestMapping(value="do_seckill_origin_data")
+	public ResultVO seckill(SeckillUser user, @RequestParam("goodsId") Long goodsId) {
+		// stock is empty
+		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
+		if (goods.getStockCount() <= 0) {
+			return ResultVO.error(ResultEnum.SECKILL_FAIL);
+		}
+
+		// user already have seckill
+		SeckillOrder seckillOrder = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
+		if (seckillOrder != null) {
+			return ResultVO.error(ResultEnum.SECKILL_REPEATE);
+		}
+
+		OrderInfo orderInfo = iSeckillService.seckill(user, goods);
+		return ResultVO.success(orderInfo);
+	}
 }

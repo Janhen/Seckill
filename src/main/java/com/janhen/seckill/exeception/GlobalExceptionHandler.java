@@ -1,7 +1,7 @@
 package com.janhen.seckill.exeception;
 
-import com.janhen.seckill.result.CodeMsg;
-import com.janhen.seckill.result.ResultVO;
+import com.janhen.seckill.common.ResultEnum;
+import com.janhen.seckill.common.ResultVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
@@ -26,16 +26,17 @@ public class GlobalExceptionHandler {
 		
 		if (e instanceof SeckillException) {
 			SeckillException ex = (SeckillException) e;
-			return ResultVO.error(ex.getCodeMsg());
+			return ResultVO.error(ex.getCode(), ex.getMessage());
 		} else if(e instanceof BindException) {
+			// handle bind exception
 			BindException ex = (BindException)e;
 			List<ObjectError> errors = ex.getAllErrors();
 			ObjectError error = errors.get(0);
 			String msg = error.getDefaultMessage();
-			return ResultVO.error(CodeMsg.BIND_ERROR.fillArgs(msg));
+			return ResultVO.error(ResultEnum.BIND_ERROR.getCode(), String.format(ResultEnum.BIND_ERROR.getMsg(), msg));
 		} else {
 			// take exception message from stack trace
-			return ResultVO.error(CodeMsg.SERVER_ERROR);
+			return ResultVO.error(ResultEnum.SERVER_ERROR);
 		}
 	}
 }

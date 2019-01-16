@@ -35,3 +35,6 @@ gen
 /target/
 /.classpath
 /.project
+/src/main/java/com/janhen/seckill/MainApplication_War.java
+/src/main/resources.prod/application.properties
+/pom_war.xml

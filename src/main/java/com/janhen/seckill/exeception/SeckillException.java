@@ -1,22 +1,21 @@
 package com.janhen.seckill.exeception;
 
-import com.janhen.seckill.result.CodeMsg;
+import com.janhen.seckill.common.ResultEnum;
+import lombok.Getter;
 
+@Getter
 public class SeckillException extends RuntimeException {
 	private static final long serialVersionUID = 55255L;
-	
-	private CodeMsg codeMsg;
-	
-	public SeckillException(CodeMsg codeMsg) {
-		super(codeMsg.getMsg());
-		this.codeMsg = codeMsg;
+
+	private int code;
+
+	public SeckillException(ResultEnum resultEnum) {
+		super(resultEnum.getMsg());
+		this.code = resultEnum.getCode();
 	}
 
-	public SeckillException() {
-		super();
-	}
-	
-	public CodeMsg getCodeMsg() {
-		return codeMsg;
+	public SeckillException(int code, String msg) {
+		super(msg);
+		this.code = code;
 	}
 }

@@ -37,7 +37,6 @@ public class CookieUtil {
 
     /**
      * 大型项目中需要先获得后删除
-     * @param response
      */
     public static void delLoginToken(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cks = request.getCookies();
@@ -53,5 +52,29 @@ public class CookieUtil {
                 }
             }
         }
+    }
+
+    /**
+     * 其他 Cookie 的获取
+     */
+    public static Cookie get(HttpServletRequest request, String name) {
+        Cookie[] cks = request.getCookies();
+        if (cks != null) {
+            for (Cookie ck : cks) {
+                if (ck.getName().equals(name)) {
+                    return ck;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void set(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie ck = new Cookie(name, value);
+        // ck.setDomain("");
+        ck.setPath("/");
+        ck.setHttpOnly(true);
+        ck.setMaxAge(maxAge);
+        response.addCookie(ck);
     }
 }

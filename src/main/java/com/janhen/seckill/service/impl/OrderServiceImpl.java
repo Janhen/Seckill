@@ -1,40 +1,38 @@
-package com.janhen.seckill.service;
+package com.janhen.seckill.service.impl;
 
 
-import java.util.Date;
-
+import com.janhen.seckill.dao.OrderMapper;
+import com.janhen.seckill.exeception.SeckillException;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
+import com.janhen.seckill.common.ResultEnum;
+import com.janhen.seckill.service.IOrderService;
+import com.janhen.seckill.vo.GoodsVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.janhen.seckill.dao.OrderMapper;
-import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.pojo.OrderInfo;
-import com.janhen.seckill.pojo.SeckillOrder;
-import com.janhen.seckill.vo.GoodsVo;
+import java.util.Date;
 
 @Service
 @Transactional(readOnly=true)
-public class OrderService {
+@Slf4j
+public class OrderServiceImpl implements IOrderService {
 	
 	@Autowired
 	OrderMapper orderMapper;
 
 	public SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId) {
 		
-		SeckillOrder order = orderMapper.selectMiaoshaOrderByUserIdAndGoodsId(userId, goodsId);
+		SeckillOrder order = orderMapper.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
 		return order;
 	}
 	
 	@Transactional
-	/** 默认每次秒杀一件 */
-	/** 维护 orderInfo, maioshaorder */
-	public OrderInfo createOrder(SeckillUser user, GoodsVo goods) {
+	public OrderInfo createOrder(SeckillUser user, GoodsVO goods) {
 		OrderInfo orderInfo = new OrderInfo();
-		// null, user.getId(), goods.getId(), 0L, goods.getGoodsName(), 1, goods.getGoodsPrice(), 1, 0, new Date(), null
 		orderInfo.setUserId(user.getId());
 		orderInfo.setGoodsId(goods.getId());
 		orderInfo.setCreateDate(new Date());
@@ -54,13 +52,16 @@ public class OrderService {
 		seckillOrder.setUserId(user.getId());
 		
 		orderMapper.insertSeckillOrder(seckillOrder);
-		
 		return orderInfo;
 	}
 
 	public OrderInfo selectOrderInfoById(Long orderId) {
-		// E0
-		return orderMapper.selectOrderInfoById(orderId);
+		OrderInfo orderInfo = orderMapper.selectOrderInfoById(orderId);
+		if (orderInfo == null) {
+			log.error("【查询订单】订单不存在, orderId:{}", orderId);
+			throw new SeckillException(ResultEnum.ORDER_NOT_EXIST);
+		}
+		return orderInfo;
 	}
 
 }

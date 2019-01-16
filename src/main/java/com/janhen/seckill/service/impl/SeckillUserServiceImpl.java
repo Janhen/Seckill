@@ -1,4 +1,4 @@
-package com.janhen.seckill.service;
+package com.janhen.seckill.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
 import com.janhen.seckill.dao.SeckillUserMapper;
@@ -6,7 +6,8 @@ import com.janhen.seckill.exeception.SeckillException;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.redis.RedisService;
 import com.janhen.seckill.redis.SeckillUserKey;
-import com.janhen.seckill.result.CodeMsg;
+import com.janhen.seckill.common.ResultEnum;
+import com.janhen.seckill.service.ISeckillUserService;
 import com.janhen.seckill.util.CookieUtil;
 import com.janhen.seckill.util.MD5Util;
 import com.janhen.seckill.util.UUIDUtil;
@@ -19,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @Service
 @Slf4j
-public class SeckillUserService {
+public class SeckillUserServiceImpl implements ISeckillUserService {
 
     public static final String COOKIE_NAME_TOKEN = "token";
 
@@ -64,13 +65,13 @@ public class SeckillUserService {
     public boolean login(HttpServletResponse response, LoginForm loginForm) {
         if (loginForm == null) {
             log.error("【登录】参数错误");
-            throw new SeckillException(CodeMsg.SERVER_ERROR);
+            throw new SeckillException(ResultEnum.SERVER_ERROR);
         }
         String mobile = loginForm.getMobile();
         SeckillUser user = getById(Long.parseLong(mobile));
         if (user == null) {
             // check mobile
-            throw new SeckillException(CodeMsg.MOBILE_NOT_EXIST);
+            throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
         }
 
         String password = loginForm.getPassword();    // fe form password
@@ -78,7 +79,7 @@ public class SeckillUserService {
         String salt = user.getSalt();
         String encryptedPass = MD5Util.formPassToDBPass(password, salt);
         if (!validPassword.equals(encryptedPass)) {
-            throw new SeckillException(CodeMsg.PASSWORD_ERROR);
+            throw new SeckillException(ResultEnum.PASSWORD_ERROR);
         }
 
         // distributed session
@@ -97,7 +98,7 @@ public class SeckillUserService {
     public boolean updatePassword(String token, long id, String formPass) {
         SeckillUser user = getById(id);
         if (user == null) {
-            throw new SeckillException(CodeMsg.MOBILE_NOT_EXIST);
+            throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
         }
 
         // update db
