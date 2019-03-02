@@ -4,13 +4,11 @@ import com.alibaba.fastjson.JSON;
 
 public class JSONUtil {
 
-    /** json ==>> obj */
     public static <T> T stringToBean(String str, Class<T> clazz) {
         if (str == null || str.length() == 0 || clazz == null) {
             return null;
         }
 
-        // int 和 long 基本类型进行特殊处理, 无法使用 json 工具转换
         if (clazz == int.class || clazz == Integer.class) {
             return (T) Integer.valueOf(str);
         } else if (clazz == long.class || clazz == Long.class) {
@@ -22,7 +20,6 @@ public class JSONUtil {
         }
     }
 
-    /**  obj ==>> json  */
     public static <T> String beanToString(T value) {
         if (value == null) {
             return null;

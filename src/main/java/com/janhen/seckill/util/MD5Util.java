@@ -1,10 +1,9 @@
 package com.janhen.seckill.util;
 
+import com.janhen.seckill.common.Const;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class MD5Util {
-	
-	private static final String SALT = "1a2b3c4d";
 	
 	public static String md5(String str) {
 		return DigestUtils.md5Hex(str);
@@ -12,8 +11,8 @@ public class MD5Util {
 	
 	/** first encryption: form ⇒ server, for test. */
 	public static String inputPassToFormPass(String input) {
-		String temp = "" + SALT.charAt(0) + SALT.charAt(2) + 
-				input + SALT.charAt(5) + SALT.charAt(4);
+		String temp = "" + Const.SALT.charAt(0) + Const.SALT.charAt(2) +
+				input + Const.SALT.charAt(5) + Const.SALT.charAt(4);
 		return md5(temp);
 	}
 	

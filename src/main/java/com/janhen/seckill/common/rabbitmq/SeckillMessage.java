@@ -1,4 +1,4 @@
-package com.janhen.seckill.rabbitmq;
+package com.janhen.seckill.common.rabbitmq;
 
 import com.janhen.seckill.pojo.SeckillUser;
 import lombok.AllArgsConstructor;

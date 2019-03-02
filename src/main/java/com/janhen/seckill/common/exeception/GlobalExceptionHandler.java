@@ -1,9 +1,8 @@
-package com.janhen.seckill.exeception;
+package com.janhen.seckill.common.exeception;
 
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -15,10 +14,9 @@ import java.util.List;
 
 @ControllerAdvice
 @ResponseBody
+@Slf4j
 public class GlobalExceptionHandler {
 
-	private Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-	
 	@ExceptionHandler(value = Exception.class)
 	public ResultVO<String> exceptionHandler(HttpServletRequest request,
                                              Exception e) {

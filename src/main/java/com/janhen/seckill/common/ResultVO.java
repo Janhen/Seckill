@@ -37,17 +37,4 @@ public class ResultVO<T> {
         this.code = code;
         this.msg = msg;
     }
-
-    public ResultVO() {
-        super();
-    }
-
-    public ResultVO(int code, String msg, T data) {
-        super();
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
-    }
-
-
 }

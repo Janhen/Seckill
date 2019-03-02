@@ -1,4 +1,6 @@
-package com.janhen.seckill.redis;
+package com.janhen.seckill.common.redis.key;
+
+import com.janhen.seckill.common.Const;
 
 public abstract class BasePrefix implements KeyPrefix{
 
@@ -12,7 +14,7 @@ public abstract class BasePrefix implements KeyPrefix{
 	}
 	
 	public BasePrefix(String prefix) {
-		this(0, prefix);
+		this(Const.PERMANENT, prefix);
 	}
 
 	@Override
@@ -23,7 +25,6 @@ public abstract class BasePrefix implements KeyPrefix{
 	@Override
 	public String getPrefix() {
 		String className = this.getClass().getSimpleName();
-		// 标识每个键所属模块, 及所属模块下的子层次
 		return new StringBuffer().append(className).append(":").append(prefix).toString();
 	}
 }

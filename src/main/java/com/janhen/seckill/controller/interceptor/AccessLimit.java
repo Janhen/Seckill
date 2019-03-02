@@ -1,4 +1,4 @@
-package com.janhen.seckill.interceptor;
+package com.janhen.seckill.controller.interceptor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -15,5 +15,4 @@ public @interface AccessLimit {
 	int maxCount();
 	
 	boolean needLogin() default true;
-
 }

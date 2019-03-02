@@ -2,10 +2,10 @@ package com.janhen.seckill.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
 import com.janhen.seckill.dao.SeckillUserMapper;
-import com.janhen.seckill.exeception.SeckillException;
+import com.janhen.seckill.common.exeception.SeckillException;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.redis.RedisService;
-import com.janhen.seckill.redis.SeckillUserKey;
+import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.common.redis.key.SeckillUserKey;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.service.ISeckillUserService;
 import com.janhen.seckill.util.CookieUtil;
@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class SeckillUserServiceImpl implements ISeckillUserService {
 
-    public static final String COOKIE_NAME_TOKEN = "token";
 
     @Autowired
     SeckillUserMapper seckillUserMapper;
@@ -53,7 +52,7 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
             return null;
         }
 
-        // take from cache and reset expire time
+        // take from cache and reset expire time(cache, cookie)
         SeckillUser user = redisService.get(SeckillUserKey.token, token, SeckillUser.class);
         if (user != null) {
             redisService.set(SeckillUserKey.token, token, user);
@@ -70,7 +69,6 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
         String mobile = loginForm.getMobile();
         SeckillUser user = getById(Long.parseLong(mobile));
         if (user == null) {
-            // check mobile
             throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
         }
 
@@ -112,29 +110,6 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
 
         return true;
     }
-
-
-//    // delay session expire and put into cookie
-//    private void addCookie(HttpServletResponse response, String token) {
-//
-//        Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
-//        cookie.setPath("/");
-//        cookie.setMaxAge(SeckillUserKey.token.expireSeconds());
-//
-//
-//        response.addCookie(cookie);
-//    }
-
-	/*public SeckillUser getByToken(String token) {
-		if (StringUtils.isEmpty(token)) {
-			return null;
-		}
-		
-		return redisService.get(SeckillUserKey.token, token, SeckillUser.class);
-	}
-*/
-
-
 }
 
 

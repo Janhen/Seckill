@@ -13,6 +13,8 @@ public class CookieUtil {
 
     public static final String COOKIE_NAME = "token";
 
+    // login
+
     public static String readLoginToken(HttpServletRequest request) {
         Cookie[] cks = request.getCookies();
         if (cks != null) {
@@ -35,9 +37,6 @@ public class CookieUtil {
         response.addCookie(ck);
     }
 
-    /**
-     * 大型项目中需要先获得后删除
-     */
     public static void delLoginToken(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cks = request.getCookies();
         if (cks != null) {
@@ -54,9 +53,7 @@ public class CookieUtil {
         }
     }
 
-    /**
-     * 其他 Cookie 的获取
-     */
+    // other
     public static Cookie get(HttpServletRequest request, String name) {
         Cookie[] cks = request.getCookies();
         if (cks != null) {

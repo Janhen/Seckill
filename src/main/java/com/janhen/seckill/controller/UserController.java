@@ -1,16 +1,15 @@
 package com.janhen.seckill.controller;
 
-import com.janhen.seckill.exeception.SeckillException;
-import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.redis.RedisService;
-import com.janhen.seckill.redis.SeckillUserKey;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
+import com.janhen.seckill.common.exeception.SeckillException;
+import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.common.redis.key.SeckillUserKey;
+import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.ISeckillUserService;
 import com.janhen.seckill.util.CookieUtil;
 import com.janhen.seckill.vo.form.LoginForm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,9 +23,8 @@ import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/user/")
+@Slf4j
 public class UserController {
-
-	private static Logger log = LoggerFactory.getLogger(UserController.class);
 
 	@Autowired
 	ISeckillUserService userService;
@@ -58,7 +56,6 @@ public class UserController {
 	@RequestMapping("logout")
 	@ResponseBody
 	public ResultVO logout(HttpServletRequest request, HttpServletResponse response) {
-
 		redisService.del(SeckillUserKey.token, CookieUtil.readLoginToken(request));
 		CookieUtil.delLoginToken(request, response);
 		return ResultVO.success("SUCCESS");

@@ -6,10 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.janhen.seckill.dao.UserMapper;
-import com.janhen.seckill.pojo.User;
-
-
 @Service
 public class UserService {
 	
@@ -20,7 +16,6 @@ public class UserService {
 		return userMapper.getById(id);
 	}
 	
-
 	@Transactional
 	public boolean tx() {
 		User user1 = new User(11, "111111");
@@ -31,7 +26,4 @@ public class UserService {
 		
 		return true;
 	}
-	
-	
-
 }

@@ -1,4 +1,4 @@
-package com.janhen.seckill.redis;
+package com.janhen.seckill.common.redis.key;
 
 public class AccessKey extends BasePrefix{
 
@@ -9,7 +9,7 @@ public class AccessKey extends BasePrefix{
 		super(expireSeconds, prefix);
 	}
 
-	// 访问限制流量使用
+	// use for user defined
 	public static AccessKey createByExpire(int expireSeconds) {
 		return new AccessKey(expireSeconds, "access");
 	}

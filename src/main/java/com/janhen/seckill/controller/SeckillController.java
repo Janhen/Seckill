@@ -1,13 +1,13 @@
 package com.janhen.seckill.controller;
 
-import com.janhen.seckill.interceptor.AccessLimit;
+import com.janhen.seckill.controller.interceptor.AccessLimit;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.rabbitmq.MQSender;
-import com.janhen.seckill.rabbitmq.SeckillMessage;
-import com.janhen.seckill.redis.GoodsKey;
-import com.janhen.seckill.redis.RedisService;
+import com.janhen.seckill.common.rabbitmq.MQSender;
+import com.janhen.seckill.common.rabbitmq.SeckillMessage;
+import com.janhen.seckill.common.redis.key.GoodsKey;
+import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
 import com.janhen.seckill.service.IGoodsService;

@@ -1,8 +1,8 @@
-package com.janhen.seckill.rabbitmq;
+package com.janhen.seckill.common.rabbitmq;
 
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.redis.RedisService;
+import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.service.impl.GoodsServiceImpl;
 import com.janhen.seckill.service.impl.OrderServiceImpl;
 import com.janhen.seckill.service.impl.SeckillServiceImpl;
@@ -13,18 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-
-/**
- * 配置消息队列 amqp 协议规定的。。。
- * @author Janh
- *
- */
 @Component
 public class MQReceiver {
 	
 	private static Logger log = LoggerFactory.getLogger(MQReceiver.class);
-	
-	
+
 	@Autowired
 	RedisService redisService;
 	
@@ -37,9 +30,6 @@ public class MQReceiver {
 	@Autowired
 	SeckillServiceImpl seckillService;
 	
-	/**
-	 * Direct 模式 ： 交换机 Exchange
-	 */
 	// @RabbitListener(queues=MQConfig.SECKILL_QUEUE)
 	public void receive(String message) {
 		log.info("receive message : " + message);
@@ -53,8 +43,7 @@ public class MQReceiver {
 		if (stock == null || stock <= 0) {
 			return;
 		}
-		
-		
+
 		SeckillOrder order = orderServiceImpl.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
 		if (order != null) {
 			return;
@@ -63,9 +52,4 @@ public class MQReceiver {
 		seckillService.seckill(user, goods);
 		log.info("入库成功！！");
 	}
-	
-	
-	
-	
-
 }

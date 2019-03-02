@@ -1,6 +1,6 @@
 package com.janhen.seckill.config;
 
-import com.janhen.seckill.interceptor.AccessInterceptor;
+import com.janhen.seckill.controller.interceptor.AccessInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

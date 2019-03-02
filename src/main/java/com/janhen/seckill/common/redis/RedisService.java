@@ -1,5 +1,6 @@
-package com.janhen.seckill.redis;
+package com.janhen.seckill.common.redis;
 
+import com.janhen.seckill.common.redis.key.KeyPrefix;
 import com.janhen.seckill.util.JSONUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,8 @@ public class RedisService {
 	@Autowired
 	private JedisPool jedisPool;
 
-	/**
-	 * get and set from redis cache by prefix and key
-	 */
+	// String
+
 	public <T> T get(KeyPrefix prefix, String key, Class<T> clazz) {
 
 		try (Jedis jedis = jedisPool.getResource();) {
@@ -34,7 +34,7 @@ public class RedisService {
 	}
 
 	public <T> boolean set(KeyPrefix prefix, String key, T value) {
-		try (Jedis jedis = jedisPool.getResource();) {
+		try (Jedis jedis = jedisPool.getResource()) {
 			String str = JSONUtil.beanToString(value);
 			if (str == null || str.length() == 0) {
 				return false;
@@ -50,6 +50,22 @@ public class RedisService {
 			return true;
 		} 
 	}
+
+	public Long incr(KeyPrefix prefix, String key) {
+		try (Jedis jedis = jedisPool.getResource();) {
+			String realKey = prefix.getPrefix() + key;
+			return jedis.incr(realKey);
+		}
+	}
+
+	public Long decr(KeyPrefix prefix, String key) {
+		try (Jedis jedis = jedisPool.getResource();) {
+			String realKey = prefix.getPrefix() + key;
+			return jedis.decr(realKey);
+		}
+	}
+
+	// General
 	
 	public boolean del(KeyPrefix prefix, String key) {
 		try (Jedis jedis = jedisPool.getResource();) {
@@ -66,26 +82,6 @@ public class RedisService {
 		} 
 	}
 
-	/**
-	 * ++ -- operation
-	 */
-	public Long incr(KeyPrefix prefix, String key) {
-		try (Jedis jedis = jedisPool.getResource();) {
-			String realKey = prefix.getPrefix() + key;
-			return jedis.incr(realKey);
-		} 
-	}
-
-	public Long decr(KeyPrefix prefix, String key) {
-		try (Jedis jedis = jedisPool.getResource();) {
-			String realKey = prefix.getPrefix() + key;
-			return jedis.decr(realKey);
-		} 
-	}
-
-	/**
-	 * use for test
-	 */
 	public boolean delete(KeyPrefix prefix) {
 		if(prefix == null) {
 			return false;

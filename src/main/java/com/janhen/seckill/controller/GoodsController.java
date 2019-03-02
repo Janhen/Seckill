@@ -1,11 +1,11 @@
 package com.janhen.seckill.controller;
 
 import com.alibaba.druid.util.StringUtils;
-import com.janhen.seckill.common.SeckillStatusEnum;
-import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.redis.GoodsKey;
-import com.janhen.seckill.redis.RedisService;
+import com.janhen.seckill.common.Const;
 import com.janhen.seckill.common.ResultVO;
+import com.janhen.seckill.common.redis.key.GoodsKey;
+import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.ISeckillUserService;
 import com.janhen.seckill.vo.GoodsDetailVO;
@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.spring4.context.SpringWebContext;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 
@@ -89,13 +87,13 @@ public class GoodsController {
 		int seckillStatus = 0;
 		int remainSeconds = 0;
 		if (curTime < startTime) {
-			seckillStatus = SeckillStatusEnum.NOT_BEGIN.getCode();
+			seckillStatus = Const.SeckillStatusEnum.NOT_BEGIN.getCode();
 			remainSeconds = (int) ((startTime - curTime) / 1000);
 		} else if (curTime > endTime) {
-			seckillStatus = SeckillStatusEnum.OVER.getCode();
+			seckillStatus = Const.SeckillStatusEnum.OVER.getCode();
 			remainSeconds = -1;
 		} else {
-			seckillStatus = SeckillStatusEnum.ON.getCode();
+			seckillStatus = Const.SeckillStatusEnum.ON.getCode();
 			remainSeconds = 0;
 		}
 		
@@ -134,13 +132,13 @@ public class GoodsController {
 		long endTime = goods.getEndDate().getTime();
 		long curTime = System.currentTimeMillis();
 		if (curTime < startTime) {
-			seckillStatus = SeckillStatusEnum.NOT_BEGIN.getCode();
+			seckillStatus = Const.SeckillStatusEnum.NOT_BEGIN.getCode();
 			remainSeconds = (int) ((startTime - curTime) / 1000);
 		} else if (curTime > endTime) {
-			seckillStatus = SeckillStatusEnum.OVER.getCode();
+			seckillStatus = Const.SeckillStatusEnum.OVER.getCode();
 			remainSeconds = -1;
 		} else {
-			seckillStatus = SeckillStatusEnum.ON.getCode();
+			seckillStatus = Const.SeckillStatusEnum.ON.getCode();
 			remainSeconds = 0;
 		}
 		model.addAttribute("seckillStatus", seckillStatus);
@@ -183,13 +181,13 @@ public class GoodsController {
 		long curTime = System.currentTimeMillis();
 		
 		if (curTime < startTime) {
-			seckillStatus = SeckillStatusEnum.NOT_BEGIN.getCode();
+			seckillStatus = Const.SeckillStatusEnum.NOT_BEGIN.getCode();
 			remainSeconds = (int) ((startTime - curTime) / 1000);
 		} else if (curTime > endTime) {
-			seckillStatus = SeckillStatusEnum.OVER.getCode();
+			seckillStatus = Const.SeckillStatusEnum.OVER.getCode();
 			remainSeconds = -1;
 		} else {
-			seckillStatus = SeckillStatusEnum.ON.getCode();
+			seckillStatus = Const.SeckillStatusEnum.ON.getCode();
 			remainSeconds = 0;
 		}
 		model.addAttribute("user", user);
@@ -198,17 +196,4 @@ public class GoodsController {
 		model.addAttribute("remainSeconds", remainSeconds);
 		return "goods_detail";
 	}
-
-//	public String ddd(@CookieValue(value=SeckillUserService.COOKIE_NAME_TOKEN, required=false) String cookieToken,
-//		@RequestParam(value=SeckillUserService.COOKIE_NAME_TOKEN, required=false) String paramToken, Model model) {
-//		if (StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)) {
-//			return "login";
-//		}
-//
-//		String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-//		SeckillUser user = iSeckillUserService.getByToken(token);
-//
-//		model.addAttribute("user", user);
-//		return "goods_list";
-//	}
 }

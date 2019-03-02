@@ -1,12 +1,12 @@
 package com.janhen.seckill.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
-import com.janhen.seckill.common.SeckillOrderStatusEnum;
+import com.janhen.seckill.common.Const;
+import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.common.redis.key.SeckillKey;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.redis.RedisService;
-import com.janhen.seckill.redis.SeckillKey;
 import com.janhen.seckill.service.ISeckillService;
 import com.janhen.seckill.util.MD5Util;
 import com.janhen.seckill.util.UUIDUtil;
@@ -157,9 +157,9 @@ public class SeckillServiceImpl implements ISeckillService {
 		if (order != null) {
 			return order.getId();
 		} else if (checkGoodsIsOver(goodsId)) {
-			return SeckillOrderStatusEnum.OVER.getCode();
+			return Const.SeckillOrderStatusEnum.OVER.getCode();
 		} else {
-			return SeckillOrderStatusEnum.WAIT_ON_QUEUE.getCode();
+			return Const.SeckillOrderStatusEnum.WAIT_ON_QUEUE.getCode();
 		}
 	}
 	

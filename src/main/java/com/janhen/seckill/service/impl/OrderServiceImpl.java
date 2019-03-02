@@ -2,7 +2,7 @@ package com.janhen.seckill.service.impl;
 
 
 import com.janhen.seckill.dao.OrderMapper;
-import com.janhen.seckill.exeception.SeckillException;
+import com.janhen.seckill.common.exeception.SeckillException;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;

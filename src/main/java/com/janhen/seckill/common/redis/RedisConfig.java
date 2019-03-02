@@ -1,4 +1,4 @@
-package com.janhen.seckill.redis;
+package com.janhen.seckill.common.redis;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -17,7 +17,6 @@ public class RedisConfig {
 	private int poolMaxTotal;
 	private int poolMaxIdle;
 	private int poolMaxWait;
-
 	private boolean testOnBorrow;
 	private boolean testOnReturn;
 }

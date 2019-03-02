@@ -1,15 +1,19 @@
 package com.janhen.seckill.service.impl;
 
+import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.dao.GoodsMapper;
+import com.janhen.seckill.common.exeception.GoodsException;
 import com.janhen.seckill.pojo.SeckillGoods;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.vo.GoodsVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class GoodsServiceImpl implements IGoodsService {
 	
 	@Autowired
@@ -21,7 +25,8 @@ public class GoodsServiceImpl implements IGoodsService {
 		}
 		GoodsVO goodsVO = goodsDao.selectGoodsVoByGoodsId(goodsId);
 		if (goodsVO == null) {
-			throw new RuntimeException("db 中无该" + goodsId);
+			log.error("【商品查询】无此商品 goodsId: {}", goodsId);
+			throw new GoodsException(ResultEnum.GOODS_NOT_EXIST);
 		}
 		return goodsVO;
 	}

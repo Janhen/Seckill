@@ -1,4 +1,4 @@
-package com.janhen.seckill.redis;
+package com.janhen.seckill.common.redis;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

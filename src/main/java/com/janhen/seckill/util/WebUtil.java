@@ -12,9 +12,6 @@ import java.io.PrintWriter;
 @Slf4j
 public class WebUtil {
 
-	/**
-	 * 前后端分离中, 在拦截器中对拦截的请求进行特定格式的返回.
-	 */
 	public static void render(HttpServletResponse response, Object obj) {
 		response.setContentType("application/json;charset=UTF-8");
 
@@ -34,9 +31,6 @@ public class WebUtil {
 		}
 	}
 
-	/**
-	 * 返回数据格式
-	 */
 	public static void renderWriter(HttpServletResponse response, Object obj) {
 		// 重置，并数据协商
 		response.reset();

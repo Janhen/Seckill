@@ -9,7 +9,7 @@ import java.util.Date;
 @Data
 public class GoodsVO extends Goods {
 
-	/** 秒杀价与库存数与原始商品不同. */
+	/** 秒杀价与库存数与原始商品不同, 必须从 DB 获取. */
 	private BigDecimal	seckillPrice;
 
 	private Integer		stockCount;
@@ -17,5 +17,4 @@ public class GoodsVO extends Goods {
 	private Date		startDate;
 
 	private Date		endDate;
-	
 }

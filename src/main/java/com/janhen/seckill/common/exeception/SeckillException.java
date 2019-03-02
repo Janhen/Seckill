@@ -1,4 +1,4 @@
-package com.janhen.seckill.exeception;
+package com.janhen.seckill.common.exeception;
 
 import com.janhen.seckill.common.ResultEnum;
 import lombok.Getter;
