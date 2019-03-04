@@ -44,3 +44,5 @@ gen
 /com/janhen/seckill/util/工具类.md
 /src/main/java/com/janhen/seckill/util/工具类.md
 /src/main/java/com/janhen/seckill/common/rabbitmq/RabbitMQ 消息队列.md
+/src/main/java/com/janhen/seckill/controller/秒杀.md
+/src/main/java/com/janhen/seckill/controller/缓存.md

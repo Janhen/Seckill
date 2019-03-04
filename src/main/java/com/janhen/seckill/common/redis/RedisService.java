@@ -21,14 +21,11 @@ public class RedisService {
 	// String
 
 	public <T> T get(KeyPrefix prefix, String key, Class<T> clazz) {
-
-		try (Jedis jedis = jedisPool.getResource();) {
-
+		try (Jedis jedis = jedisPool.getResource()) {
 			// generate the real key
 			String realKey = prefix.getPrefix() + key;
 			String str = jedis.get(realKey);
 			T res = JSONUtil.stringToBean(str, clazz);
-
 			return res;
 		} 
 	}
@@ -120,7 +117,7 @@ public class RedisService {
 				if(result!=null && result.size() > 0){
 					keys.addAll(result);
 				}
-				//再处理cursor
+				// new cursor to scan
 				cursor = ret.getStringCursor();
 			}while(!cursor.equals("0"));
 			return keys;

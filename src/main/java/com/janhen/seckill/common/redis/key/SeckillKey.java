@@ -9,6 +9,9 @@ public class SeckillKey extends BasePrefix{
 	}
 	
 	public static SeckillKey isGoodsOver = new SeckillKey(Const.PERMANENT, "goodsOver");
+
 	public static SeckillKey getSeckillPath = new SeckillKey(Const.MINUTE, "seckillPath");
+
+	/** 某件商品的秒杀验证码. */
 	public static SeckillKey getSeckillVerifyCode = new SeckillKey(5*Const.MINUTE, "verifyCode");
 }

@@ -1,4 +1,4 @@
-package com.janhen.seckill.validator;
+package com.janhen.seckill.controller.validator;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.CONSTRUCTOR;

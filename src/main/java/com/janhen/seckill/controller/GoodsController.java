@@ -44,7 +44,7 @@ public class GoodsController {
 	ApplicationContext applicationContext;
 	
 	/**
-	 * 页面缓存：手动渲染返回页面, 从缓存中取
+	 * Page: render list page AND put into cache
 	 */
 	@RequestMapping(value="to_list", produces="text/html;charset=utf-8")
 	@ResponseBody
@@ -71,13 +71,11 @@ public class GoodsController {
 	}
 	
 	/**
-	 * 页面静态化,前后端分离 ：异步获取填充
+	 * JSON data: get detail needed data to render fro FE
 	 */
 	@RequestMapping(value="detail/{goodsId}")
 	@ResponseBody
 	public ResultVO<GoodsDetailVO> detail00(SeckillUser user, @PathVariable("goodsId") Long goodsId) {
-
-		log.info("param:{}", goodsId);
 		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		
 		long startTime = goods.getStartDate().getTime();
@@ -103,97 +101,5 @@ public class GoodsController {
 		goodsDetailVO.setSeckillStatus(seckillStatus);
 		goodsDetailVO.setRemainSeconds(remainSeconds);
 		return ResultVO.success(goodsDetailVO);
-	}
-	
-	
-	
-	/**
-	 * 页面缓存：手动渲染页面，放入缓存中
-	 */
-	@RequestMapping(value="to_detail_page/{goodsId}", produces="text/html")
-	@ResponseBody
-	public String detailPage(Model model, SeckillUser user,
-			@PathVariable("goodsId") Long goodsId,
-			HttpServletRequest request, HttpServletResponse response) {
-		// 1.take from cache
-		String html = redisService.get(GoodsKey.getGoodsDetail, "" + goodsId, String.class);
-		if (!StringUtils.isEmpty(html)) {
-			return html;
-		}
-
-		// 2. take from db and render data to html, put html file into cache
-		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
-		model.addAttribute("user", user);
-		model.addAttribute("goods", goods);
-		
-		int seckillStatus = 0;
-		int remainSeconds = 0;
-		long startTime = goods.getStartDate().getTime();
-		long endTime = goods.getEndDate().getTime();
-		long curTime = System.currentTimeMillis();
-		if (curTime < startTime) {
-			seckillStatus = Const.SeckillStatusEnum.NOT_BEGIN.getCode();
-			remainSeconds = (int) ((startTime - curTime) / 1000);
-		} else if (curTime > endTime) {
-			seckillStatus = Const.SeckillStatusEnum.OVER.getCode();
-			remainSeconds = -1;
-		} else {
-			seckillStatus = Const.SeckillStatusEnum.ON.getCode();
-			remainSeconds = 0;
-		}
-		model.addAttribute("seckillStatus", seckillStatus);
-		model.addAttribute("remainSeconds", remainSeconds);
-		
-		// Core. resolve manually
-		SpringWebContext ctx = new SpringWebContext(request, response, request.getServletContext(), 
-				request.getLocale(), model.asMap(), applicationContext);
-		html = viewResolver.getTemplateEngine().process("goods_detail", ctx);
-		if (!StringUtils.isEmpty(html)) {
-			redisService.set(GoodsKey.getGoodsDetail, "" + goodsId, html);
-		}
-		return html;
-	}
-	
-	
-	/**
-	 * 原始商品列表
-	 */
-	@RequestMapping(value = "to_list_origin")
-	public String list2(Model model, SeckillUser user) {
-		List<GoodsVO> goodsList = iGoodsService.selectGoodsVoList();
-		model.addAttribute("user", user);
-		model.addAttribute("goodsList", goodsList);
-		return "goods_list";
-	}
-	
-	
-	/**
-	 * 原始商品详情
-	 */
-	@RequestMapping(value="to_detail_origin/{goodsId}")
-	public String toDetail(Model model, SeckillUser user, @PathVariable("goodsId") Long goodsId) {
-
-		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
-		int seckillStatus = 0;
-		int remainSeconds = 0;
-		long startTime = goods.getStartDate().getTime();
-		long endTime = goods.getEndDate().getTime();
-		long curTime = System.currentTimeMillis();
-		
-		if (curTime < startTime) {
-			seckillStatus = Const.SeckillStatusEnum.NOT_BEGIN.getCode();
-			remainSeconds = (int) ((startTime - curTime) / 1000);
-		} else if (curTime > endTime) {
-			seckillStatus = Const.SeckillStatusEnum.OVER.getCode();
-			remainSeconds = -1;
-		} else {
-			seckillStatus = Const.SeckillStatusEnum.ON.getCode();
-			remainSeconds = 0;
-		}
-		model.addAttribute("user", user);
-		model.addAttribute("goods", goods);
-		model.addAttribute("seckillStatus", seckillStatus);
-		model.addAttribute("remainSeconds", remainSeconds);
-		return "goods_detail";
 	}
 }

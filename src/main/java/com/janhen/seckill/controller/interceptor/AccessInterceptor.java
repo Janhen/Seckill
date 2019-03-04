@@ -36,7 +36,6 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 		UserContext.setUser(user);
 
 		if (handler instanceof HandlerMethod) {
-			// get AccessLimit.class annotation
 			HandlerMethod handlerMethod = (HandlerMethod) handler;
 			String methodName = handlerMethod.getMethod().getName();
 			String className = handlerMethod.getBean().getClass().getName();
@@ -48,9 +47,9 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 
 			int seconds = accessLimit.seconds();
 			int maxCount = accessLimit.maxCount();
-			boolean isNeedLogin = accessLimit.needLogin();
+			boolean needLogin = accessLimit.needLogin();
 			String key = request.getRequestURI();
-			if (isNeedLogin) {
+			if (needLogin) {
 				if (user == null) {
 					// put error message into response cache
 					log.error("【访问控制】需要登录");

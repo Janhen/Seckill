@@ -18,6 +18,8 @@ public class Const {
 
     public final static String COOKIE_NAME_TOKEN = "token";
 
+    public final static String SPLIT = ":";
+
 
     @Getter
     public enum SeckillOrderStatusEnum {

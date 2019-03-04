@@ -54,7 +54,7 @@ public class SeckillServiceImpl implements ISeckillService {
 
 	public String generateSeckillPath(SeckillUser user, Long goodsId) {
 		String seckillPath = MD5Util.md5(UUIDUtil.uuid()) + System.currentTimeMillis() % 1000;
-		redisService.set(SeckillKey.getSeckillPath, "" + user.getId() + "_" + goodsId, seckillPath);
+		redisService.set(SeckillKey.getSeckillPath, "" + user.getId() + Const.SPLIT + goodsId, seckillPath);
 		return seckillPath;
 	}
 	
@@ -62,7 +62,8 @@ public class SeckillServiceImpl implements ISeckillService {
 		if (user == null || goodsId == null || StringUtils.isEmpty(path)) {
 			return false;
 		}
-		String cachedPath = redisService.get(SeckillKey.getSeckillPath, String.valueOf(user.getId() + "_" + goodsId), String.class);
+		String key = user.getId() + Const.SPLIT + goodsId;
+		String cachedPath = redisService.get(SeckillKey.getSeckillPath, key, String.class);
 		return path.equals(cachedPath);
 	}
 
@@ -118,9 +119,6 @@ public class SeckillServiceImpl implements ISeckillService {
 		return exp;
 	}
 	
-	/**
-	 * todo algorithm implement
-	 */
 	private static int calc(String exp) {
 		try {
 			ScriptEngineManager manager = new ScriptEngineManager();
@@ -145,10 +143,6 @@ public class SeckillServiceImpl implements ISeckillService {
 		return true;
 	}
 
-	// three condition:
-	//  - P1: get good
-	//  - P2: 秒杀结束
-	//  - P3: 排队中
 	public Long getSeckillResult(Long userId, Long goodsId) {
 		if (goodsId == null) {
 			return -1L;

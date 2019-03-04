@@ -1,15 +1,14 @@
 package com.janhen.seckill.controller;
 
-import com.janhen.seckill.controller.interceptor.AccessLimit;
-import com.janhen.seckill.pojo.OrderInfo;
-import com.janhen.seckill.pojo.SeckillOrder;
-import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.common.rabbitmq.MQSender;
-import com.janhen.seckill.common.rabbitmq.SeckillMessage;
-import com.janhen.seckill.common.redis.key.GoodsKey;
-import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
+import com.janhen.seckill.common.rabbitmq.MQSender;
+import com.janhen.seckill.common.rabbitmq.SeckillMessage;
+import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.common.redis.key.GoodsKey;
+import com.janhen.seckill.controller.interceptor.AccessLimit;
+import com.janhen.seckill.pojo.SeckillOrder;
+import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.IOrderService;
 import com.janhen.seckill.service.ISeckillService;
@@ -55,12 +54,11 @@ public class SeckillController implements InitializingBean{
 	@Autowired
     MQSender sender;
 
-	// ★★ reduce redis cache access
 	private Map<Long, Boolean> localOverMap = new ConcurrentHashMap<>();
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		// ★★ cache preload and init map
+		// preload cache and init map
 		List<GoodsVO> goodsList = iGoodsService.selectGoodsVoList();
 		if (goodsList != null) {
 			for (GoodsVO goods : goodsList) {
@@ -68,7 +66,7 @@ public class SeckillController implements InitializingBean{
 				localOverMap.put(goods.getId(), false);
 			}
 		}
-		return ;
+		return;
 	}
 
 	@RequestMapping(value="verifyCode")
@@ -88,20 +86,12 @@ public class SeckillController implements InitializingBean{
 
 	@RequestMapping(value="path", method=RequestMethod.GET)
 	@ResponseBody
-	@AccessLimit(seconds=60, maxCount=60, needLogin=true)
+	@AccessLimit(seconds=60, maxCount=60)
 	public ResultVO<String> getSeckillPath(HttpServletRequest request, SeckillUser user,
                                            @RequestParam("goodsId") Long goodsId,
                                            @RequestParam("verifyCode") Integer verfiyCode) {
-		// 获取秒杀地址
-		//    - traffic restrictions: redis
-		//    - 验证码正确返回地址  ⇒ prevent interface brush
-		if (user == null) {
-			return ResultVO.error(ResultEnum.SESSION_ERROR);
-		}
-		
 		String key = request.getRequestURI() + "_" + user.getId();
-		// ★★ 1.redis implement traffic restrictions
-
+		// 1.redis implement traffic restrictions
 
 		// 2.check the verify code
 		boolean isValid = iSeckillService.checkVerifyCode(user, goodsId, verfiyCode);
@@ -118,12 +108,6 @@ public class SeckillController implements InitializingBean{
 	@ResponseBody
 	public ResultVO<Integer> seckill0(Model model, SeckillUser user,
 									  @PathVariable("path") String path, @RequestParam("goodsId") Long goodsId) {
-		// 秒杀:
-		//   - path judge
-		//   - good stock judge
-		//   - reduce stock from redis
-		//   - restrict one person only can seckill one good
-		//   - message queue  ⇒  异步调用
 		model.addAttribute("user", user);
 		if (user == null) {
 			return ResultVO.error(ResultEnum.SESSION_ERROR);
@@ -136,7 +120,7 @@ public class SeckillController implements InitializingBean{
 			return ResultVO.error(ResultEnum.REQUEST_ILLEGAL);
 		}
 
-		// 2.★judge stock whether or not empty
+		// 2.judge stock whether or not empty
 		boolean isOver = localOverMap.get(goodsId);
 		if (isOver) {
 			log.error("【秒杀】秒杀结束");
@@ -172,52 +156,5 @@ public class SeckillController implements InitializingBean{
 		}
 		Long orderId = iSeckillService.getSeckillResult(user.getId(), goodsId);
 		return ResultVO.success(orderId);
-	}
-	
-
-	// raw access
-	@RequestMapping(value="do_seckill_origin_page")
-	public String seckill(Model model,SeckillUser user,
-			@RequestParam("goodsId") Long goodsId) {
-		if (user == null) { return "login"; }
-		
-		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
-		// stock is empty
-		if (goods.getStockCount() <= 0) {
-			model.addAttribute("errormsg", ResultEnum.SECKILL_OVER.getMsg());
-			return "seckill_fail";
-		}
-
-		// user have a seckill then seckill fail
-		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
-		if (order != null) {
-			model.addAttribute("errormsg", ResultEnum.SECKILL_REPEATE.getMsg());
-			return "seckill_fail";
-		}
-		
-		// BR desc stock and insert seckillorder
-		OrderInfo orderInfo = iSeckillService.seckill(user, goods);
-		model.addAttribute("user", user);
-		model.addAttribute("orderInfo", orderInfo);
-		model.addAttribute("goods", goods);
-		return "order_detail";
-	}
-
-	@RequestMapping(value="do_seckill_origin_data")
-	public ResultVO seckill(SeckillUser user, @RequestParam("goodsId") Long goodsId) {
-		// stock is empty
-		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
-		if (goods.getStockCount() <= 0) {
-			return ResultVO.error(ResultEnum.SECKILL_FAIL);
-		}
-
-		// user already have seckill
-		SeckillOrder seckillOrder = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
-		if (seckillOrder != null) {
-			return ResultVO.error(ResultEnum.SECKILL_REPEATE);
-		}
-
-		OrderInfo orderInfo = iSeckillService.seckill(user, goods);
-		return ResultVO.success(orderInfo);
 	}
 }
