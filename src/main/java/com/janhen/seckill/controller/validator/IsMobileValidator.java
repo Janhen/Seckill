@@ -6,6 +6,9 @@ import org.springframework.util.StringUtils;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+/**
+ * 自定义 JSR303 注解完成校验
+ */
 public class IsMobileValidator implements ConstraintValidator<IsMobile, String>{
 
 	private boolean required = false;

@@ -62,10 +62,11 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
     }
 
     public boolean login(HttpServletResponse response, LoginForm loginForm) {
-        if (loginForm == null) {
-            log.error("【登录】参数错误");
-            throw new SeckillException(ResultEnum.SERVER_ERROR);
-        }
+        // loginForm must valid by JSR303 ensure
+//        if (loginForm == null) {
+//            log.error("【登录】参数错误");
+//            throw new SeckillException(ResultEnum.SERVER_ERROR);
+//        }
         String mobile = loginForm.getMobile();
         SeckillUser user = getById(Long.parseLong(mobile));
         if (user == null) {

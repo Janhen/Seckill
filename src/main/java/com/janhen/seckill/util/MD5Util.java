@@ -28,6 +28,10 @@ public class MD5Util {
 		String dbPass = formPassToDBPass(formPass, dbSalt);
 		return dbPass;
 	}
+
+	public static void main(String[] args) {
+		System.out.println(MD5Util.inputPassToDBPass("123456", "1a2b3c"));
+	}
 }
 
 

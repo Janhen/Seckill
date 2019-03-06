@@ -4,7 +4,6 @@ import com.janhen.seckill.common.ResultEnum;
 
 public class GoodsException extends SeckillException {
 
-
     public GoodsException(ResultEnum resultEnum) {
         super(resultEnum);
     }

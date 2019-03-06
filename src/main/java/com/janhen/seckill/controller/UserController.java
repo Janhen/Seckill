@@ -1,8 +1,6 @@
 package com.janhen.seckill.controller;
 
-import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
-import com.janhen.seckill.common.exeception.SeckillException;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.SeckillUserKey;
 import com.janhen.seckill.pojo.SeckillUser;
@@ -13,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -39,10 +36,10 @@ public class UserController {
 
 	@RequestMapping(value = "do_login")
 	@ResponseBody
-	public ResultVO<Boolean> doLogin(HttpServletResponse response, @Valid LoginForm loginForm, BindingResult bindingResult) {
-		if (bindingResult.hasErrors()) {
-			throw new SeckillException(ResultEnum.BIND_ERROR);
-		}
+	public ResultVO<Boolean> doLogin(HttpServletResponse response, @Valid LoginForm loginForm) {  // , BindingResult bindingResult
+//		if (bindingResult.hasErrors()) {    // take bindResult not throw org.springframework.validation.BindException
+//			throw new SeckillException(ResultEnum.BIND_ERROR);
+//		}
 		boolean b = userService.login(response, loginForm);
 		return ResultVO.success(b);
 	}

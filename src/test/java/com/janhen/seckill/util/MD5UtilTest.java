@@ -12,6 +12,6 @@ public class MD5UtilTest {
 
     @Test
     public void md5() {
-        System.out.println(MD5Util.inputPassToDBPass("123456", "1a2b3c"));
+        System.out.println(MD5Util.inputPassToDBPass("ddd", "1a2b3c"));
     }
 }

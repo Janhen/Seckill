@@ -20,20 +20,19 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(value = Exception.class)
 	public ResultVO<String> exceptionHandler(HttpServletRequest request,
                                              Exception e) {
-		e.printStackTrace();
-		
-		if (e instanceof SeckillException) {
-			SeckillException ex = (SeckillException) e;
-			return ResultVO.error(ex.getCode(), ex.getMessage());
-		} else if(e instanceof BindException) {
-			// handle bind exception
+		// e.printStackTrace();
+		if(e instanceof BindException) {       // handle JSR303 exception ALSO can handle by using BindingResult as param ....
 			BindException ex = (BindException)e;
 			List<ObjectError> errors = ex.getAllErrors();
 			ObjectError error = errors.get(0);
 			String msg = error.getDefaultMessage();
+			log.info("绑定信息: {}", msg);
 			return ResultVO.error(ResultEnum.BIND_ERROR.getCode(), String.format(ResultEnum.BIND_ERROR.getMsg(), msg));
+		} else if (e instanceof SeckillException) {
+			SeckillException ex = (SeckillException) e;
+			log.info("信息...{}", "dfds");
+			return ResultVO.error(ex.getCode(), ex.getMessage());
 		} else {
-			// take exception message from stack trace
 			return ResultVO.error(ResultEnum.SERVER_ERROR);
 		}
 	}
