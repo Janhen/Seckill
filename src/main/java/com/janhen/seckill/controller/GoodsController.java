@@ -43,9 +43,6 @@ public class GoodsController {
 	@Autowired
 	ApplicationContext applicationContext;
 	
-	/**
-	 * Page: render list page AND put into cache
-	 */
 	@RequestMapping(value="to_list", produces="text/html;charset=utf-8")
 	@ResponseBody
 	public String list(Model model, SeckillUser user, HttpServletRequest request, HttpServletResponse response) {
@@ -70,9 +67,6 @@ public class GoodsController {
 		return html;
 	}
 	
-	/**
-	 * JSON data: get detail needed data to render fro FE
-	 */
 	@RequestMapping(value="detail/{goodsId}")
 	@ResponseBody
 	public ResultVO<GoodsDetailVO> detail00(SeckillUser user, @PathVariable("goodsId") Long goodsId) {

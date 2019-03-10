@@ -35,7 +35,6 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 		SeckillUser user = getUserByToken(request, response);
 		UserContext.setUser(user);
 
-		log.info("【】【】");
 		if (handler instanceof HandlerMethod) {
 			HandlerMethod handlerMethod = (HandlerMethod) handler;
 			String methodName = handlerMethod.getMethod().getName();
@@ -43,17 +42,14 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 
 			AccessLimit accessLimit = handlerMethod.getMethodAnnotation(AccessLimit.class);
 			if (accessLimit == null) {
-				log.info("无访问控制");
 				return true;
 			}
 
 			int seconds = accessLimit.seconds();
 			int maxCount = accessLimit.maxCount();
 			boolean needLogin = accessLimit.needLogin();
-			log.info("访问控制参数: needLogin: {}, seconds: {}, maxCount: {}", needLogin, seconds, maxCount);
 			if (needLogin) {
 				if (user == null) {
-					// put error message into response cache
 					log.error("【访问控制】需要登录");
 					WebUtil.render(response, ResultEnum.SESSION_ERROR);
 					return false;
@@ -62,9 +58,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 
 			AccessKey accessKeyPrefix = AccessKey.createByExpire(seconds);
 			String key = request.getRequestURI() + Const.SPLIT + user.getId();
-
 			Integer curAccessCnt = redisService.get(accessKeyPrefix, key, Integer.class);
-			log.info("访问 Key: {}", curAccessCnt);
 			if (curAccessCnt == null) {
 				redisService.set(accessKeyPrefix, key, 1);
 			} else if (curAccessCnt < maxCount) {

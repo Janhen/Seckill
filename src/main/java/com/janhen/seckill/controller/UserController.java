@@ -37,9 +37,6 @@ public class UserController {
 	@RequestMapping(value = "do_login")
 	@ResponseBody
 	public ResultVO<Boolean> doLogin(HttpServletResponse response, @Valid LoginForm loginForm) {  // , BindingResult bindingResult
-//		if (bindingResult.hasErrors()) {    // take bindResult not throw org.springframework.validation.BindException
-//			throw new SeckillException(ResultEnum.BIND_ERROR);
-//		}
 		boolean b = userService.login(response, loginForm);
 		return ResultVO.success(b);
 	}
