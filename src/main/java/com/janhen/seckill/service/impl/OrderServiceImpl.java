@@ -25,9 +25,20 @@ public class OrderServiceImpl implements IOrderService {
 	OrderMapper orderMapper;
 
 	public SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId) {
-		
 		SeckillOrder order = orderMapper.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
 		return order;
+	}
+
+	/**
+	 * 控制每个用户秒杀指定商品的数量
+	 * 可添加时间字段进一步扩展
+	 * @param userId
+	 * @param goodsId
+	 * @return
+	 */
+	public Integer selectSeckillCountByUserIdAndGoodsId(Long userId, Long goodsId) {
+		int cnt = orderMapper.selectSeckillCountByUserIdAndGoodsId(userId, goodsId);
+		return cnt;
 	}
 	
 	@Transactional

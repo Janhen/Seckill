@@ -2,11 +2,12 @@ package com.janhen.seckill.controller;
 
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
-import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.pojo.User;
 import com.janhen.seckill.common.rabbitmq.MQSender;
+import com.janhen.seckill.common.rabbitmq.SeckillMessage;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.UserKey;
+import com.janhen.seckill.pojo.SeckillUser;
+import com.janhen.seckill.pojo.User;
 import com.janhen.seckill.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -77,12 +78,15 @@ public class TestController {
 	@RequestMapping(value="mq")
 	@ResponseBody
 	public ResultVO<String> mq() {
+		SeckillMessage seckillMessage = new SeckillMessage();
 		SeckillUser user = new SeckillUser();
 		user.setId(2262L);
 		user.setNickname("jack");
 		user.setPassword("fsdfewrgsfsdf");
-		
-		sender.send(user);
+		seckillMessage.setUser(user);
+		seckillMessage.setGoodsId(1L);
+
+		sender.sendSeckillMessage(seckillMessage);
 		return ResultVO.success("hello world!");
 	}
 }

@@ -10,5 +10,7 @@ public interface IGoodsService {
 
     List<GoodsVO> selectGoodsVoList();
 
+    List<GoodsVO> selectSeckillGoodsVoList();
+
     boolean descStock(GoodsVO goods);
 }

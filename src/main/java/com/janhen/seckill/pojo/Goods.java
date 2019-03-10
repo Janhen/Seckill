@@ -21,6 +21,7 @@ public class Goods {
 
 	private String		goodsDetail;
 
+	/** 商品原价. */
 	private BigDecimal	goodsPrice;
 
 	private Integer		goodsStock;

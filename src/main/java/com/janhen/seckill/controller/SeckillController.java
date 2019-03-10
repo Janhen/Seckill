@@ -1,8 +1,10 @@
 package com.janhen.seckill.controller;
 
+import com.janhen.seckill.common.Const;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
 import com.janhen.seckill.common.rabbitmq.MQSender;
+import com.janhen.seckill.common.rabbitmq.SeckillCountLimitMessage;
 import com.janhen.seckill.common.rabbitmq.SeckillMessage;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.GoodsKey;
@@ -59,7 +61,7 @@ public class SeckillController implements InitializingBean{
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		// preload cache and init map
-		List<GoodsVO> goodsList = iGoodsService.selectGoodsVoList();
+		List<GoodsVO> goodsList = iGoodsService.selectSeckillGoodsVoList();          // only store seckill good
 		if (goodsList != null) {
 			for (GoodsVO goods : goodsList) {
 				redisService.set(GoodsKey.getSeckillGoodsStock, "" + goods.getId(), goods.getStockCount());
@@ -86,11 +88,11 @@ public class SeckillController implements InitializingBean{
 
 	@RequestMapping(value="path", method=RequestMethod.GET)
 	@ResponseBody
-	@AccessLimit(seconds=60, maxCount=60)
+	@AccessLimit(seconds=60, maxCount=2)
 	public ResultVO<String> getSeckillPath(HttpServletRequest request, SeckillUser user,
                                            @RequestParam("goodsId") Long goodsId,
                                            @RequestParam("verifyCode") Integer verfiyCode) {
-		String key = request.getRequestURI() + "_" + user.getId();
+		String key = request.getRequestURI() + "_" + user.getId();   //
 		// 1.redis implement traffic restrictions
 
 		// 2.check the verify code
@@ -104,8 +106,8 @@ public class SeckillController implements InitializingBean{
 		return ResultVO.success(seckillPath);
 	}
 	
-	@RequestMapping(value="{path}/do_seckill", method=RequestMethod.POST)
-	@ResponseBody
+//	@RequestMapping(value={"{path}/do_seckill"}, method={RequestMethod.POST})
+//	@ResponseBody
 	public ResultVO<Integer> seckill0(Model model, SeckillUser user,
 									  @PathVariable("path") String path, @RequestParam("goodsId") Long goodsId) {
 		model.addAttribute("user", user);
@@ -135,18 +137,67 @@ public class SeckillController implements InitializingBean{
 			return ResultVO.error(ResultEnum.SECKILL_OVER);
 		}
 		
-		// 4.check user already have seckill
+		// 4. Business strategy: check user already have seckill !!! can extension
 		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
 		if (order != null) {
 			log.error("【秒杀】秒杀重复,userId:{},goodsId{}", user.getId(), goodsId);
 			return ResultVO.error(ResultEnum.SECKILL_REPEATE);
 		}
-		
+
 		// 5.put into message queue
 		SeckillMessage message = new SeckillMessage(user, goodsId);
-		sender.send(message);
+		sender.sendSeckillMessage(message);
 		return ResultVO.success(0);
 	}
+
+//	@RequestMapping(value={"{path}/do_seckill_count_limit"}, method={RequestMethod.POST})
+	@RequestMapping(value={"{path}/do_seckill"}, method={RequestMethod.POST})
+	@ResponseBody
+	public ResultVO<Integer> seckillCountLimit(Model model, SeckillUser user,
+									  @PathVariable("path") String path, @RequestParam("goodsId") Long goodsId) {
+		model.addAttribute("user", user);
+		if (user == null) {
+			return ResultVO.error(ResultEnum.SESSION_ERROR);
+		}
+
+		// 1.check seckill path from redis cache
+		boolean isCorrect = iSeckillService.checkPath(user, goodsId, path);
+		if (!isCorrect) {
+			log.error("【秒杀】路径非法");
+			return ResultVO.error(ResultEnum.REQUEST_ILLEGAL);
+		}
+
+		// 2.judge stock whether or not empty
+		boolean isOver = localOverMap.get(goodsId);
+		if (isOver) {
+			log.error("【秒杀】秒杀结束");
+			return ResultVO.error(ResultEnum.SECKILL_OVER);
+		}
+
+		// 3.decr stock from redis cache
+		Long stock = redisService.decr(GoodsKey.getSeckillGoodsStock, "" + goodsId);
+		if (stock < 0) {
+			localOverMap.put(goodsId, true);
+			log.error("【秒杀】秒杀结束");
+			return ResultVO.error(ResultEnum.SECKILL_OVER);
+		}
+
+		// 4. Business strategy: Count Limit
+		Integer seckillCnt = iOrderService.selectSeckillCountByUserIdAndGoodsId(user.getId(), goodsId);
+		if (seckillCnt > Const.MAX_SECKILL_COUNT) {
+			log.error("【秒杀】秒杀达到上限, userId: {}, goodsId{}", user.getId(), goodsId);
+			return ResultVO.error(ResultEnum.SECKILL_COUNT_LIMIT);
+		}
+
+		// 5.put into message queue
+		SeckillCountLimitMessage message = new SeckillCountLimitMessage(user, goodsId);
+		sender.sendSeckillCountLimitMessage(message);
+		return ResultVO.success(0);
+	}
+
+	// can extension Business strategy
+
+
 	
 	@RequestMapping(value="result")
 	@ResponseBody

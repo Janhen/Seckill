@@ -20,6 +20,10 @@ public class Const {
 
     public final static String SPLIT = ":";
 
+    /**
+     * 每个用户最多秒杀某件商品多少次
+     */
+    public final static int MAX_SECKILL_COUNT = 10;
 
     @Getter
     public enum SeckillOrderStatusEnum {
@@ -50,6 +54,27 @@ public class Const {
         private String msg;
 
         SeckillStatusEnum(int code, String msg) {
+            this.code = code;
+            this.msg = msg;
+        }
+    }
+
+    @Getter
+    public enum OrderStatus {
+        // 订单状态，0新建未支付，1已支付，2已发货，3已收货，4已退款，5已完成
+
+        NOT_PAY(0, "未支付"),
+        ALREADY_PAY(1, "已支付"),
+        HAS_SHIPPED(2, "已发货"),
+        HAS_RECEIVED(3, "已收货"),
+        HAS_REFUND(4, "已退款"),
+        HAS_OVER(5, "已完成");
+
+        private int code;
+
+        private String msg;
+
+        OrderStatus(int code, String msg) {
             this.code = code;
             this.msg = msg;
         }

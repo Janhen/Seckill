@@ -35,7 +35,12 @@ public class GoodsServiceImpl implements IGoodsService {
 		List<GoodsVO> goodsList = goodsDao.selectGoodsVoList();
 		return goodsList;
 	}
-	
+
+	public List<GoodsVO> selectSeckillGoodsVoList() {
+		List<GoodsVO> goodsList = goodsDao.selectSeckillGoodsVoList();
+		return goodsList;
+	}
+
 	public boolean descStock(GoodsVO goods) {
 		SeckillGoods seckillGoods = new SeckillGoods();
 		seckillGoods.setGoodsId(goods.getId());

@@ -1,5 +1,6 @@
 package com.janhen.seckill.util;
 
+import com.janhen.seckill.common.Const;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.Cookie;
@@ -11,7 +12,7 @@ public class CookieUtil {
 
     public static final String COOKIE_DOMAIN = "";
 
-    public static final String COOKIE_NAME = "token";
+    public static final String COOKIE_TOKEN_NAME = "token";
 
     // login
 
@@ -19,7 +20,7 @@ public class CookieUtil {
         Cookie[] cks = request.getCookies();
         if (cks != null) {
             for (Cookie ck : cks) {
-                if (COOKIE_NAME.equals(ck.getName())) {
+                if (COOKIE_TOKEN_NAME.equals(ck.getName())) {
                     return ck.getValue();
                 }
             }
@@ -28,11 +29,11 @@ public class CookieUtil {
     }
 
     public static void writeLoginToken(HttpServletResponse response, String token) {
-        Cookie ck = new Cookie(COOKIE_NAME, token);
+        Cookie ck = new Cookie(COOKIE_TOKEN_NAME, token);
         // ck.setDomain(COOKIE_DOMAIN);
         ck.setPath("/");
         ck.setHttpOnly(true);
-        ck.setMaxAge(30 * 60);
+        ck.setMaxAge(30 * Const.MINUTE);
         log.info("set cookie, name:{}, value:{}", ck.getName(), ck.getValue());
         response.addCookie(ck);
     }
@@ -41,7 +42,7 @@ public class CookieUtil {
         Cookie[] cks = request.getCookies();
         if (cks != null) {
             for (Cookie ck : cks) {
-                if (COOKIE_NAME.equals(ck.getName())) {
+                if (COOKIE_TOKEN_NAME.equals(ck.getName())) {
                     // ck.setDomain(COOKIE_DOMAIN);
                     ck.setPath("/");
                     ck.setHttpOnly(true);

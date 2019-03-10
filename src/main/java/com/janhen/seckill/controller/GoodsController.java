@@ -58,7 +58,7 @@ public class GoodsController {
 		}
 
 		// 2.view resolver to render model to html and put into cache
-		List<GoodsVO> goodsList = iGoodsService.selectGoodsVoList();
+		List<GoodsVO> goodsList = iGoodsService.selectSeckillGoodsVoList();
 		model.addAttribute("goodsList", goodsList);
 		SpringWebContext ctx = new SpringWebContext(request,response,
 				request.getServletContext(),request.getLocale(), model.asMap(), applicationContext);

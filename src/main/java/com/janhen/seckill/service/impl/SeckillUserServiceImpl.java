@@ -52,11 +52,11 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
             return null;
         }
 
-        // take from cache and reset expire time(cache, cookie)
+        // take from cache AND reset expire time(cache, cookie)
         SeckillUser user = redisService.get(SeckillUserKey.token, token, SeckillUser.class);
         if (user != null) {
-            redisService.set(SeckillUserKey.token, token, user);
-            CookieUtil.writeLoginToken(response, token);
+            redisService.set(SeckillUserKey.token, token, user);    // reset session expire time
+            CookieUtil.writeLoginToken(response, token);             // reset cookie expire time
         }
         return user;
     }
@@ -81,7 +81,7 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
             throw new SeckillException(ResultEnum.PASSWORD_ERROR);
         }
 
-        // distributed session
+        // distributed session, only generate in here
         String token = UUIDUtil.uuid();
         redisService.set(SeckillUserKey.token, token, user);
         CookieUtil.writeLoginToken(response, token);

@@ -9,6 +9,8 @@ public interface IOrderService {
 
     SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId);
 
+    Integer selectSeckillCountByUserIdAndGoodsId(Long userId, Long goodsId);
+
     OrderInfo createOrder(SeckillUser user, GoodsVO goods);
 
     OrderInfo selectOrderInfoById(Long orderId);

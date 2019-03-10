@@ -11,18 +11,27 @@ import java.util.List;
 
 @Mapper
 public interface GoodsMapper {
-	
-	@Select("select g.*, sg.stock_count, sg.start_date, sg.end_date, sg.seckill_price seckill_price " +
-			"from goods g left join seckill_goods sg on g.id = sg.goods_id")
+
+	String TABLE_SECKILL_GOODS = " seckill_goods ";
+
+	@Select("SELECT g.*, sg.stock_count, sg.start_date, sg.end_date, sg.seckill_price seckill_price " +
+			"FROM goods g LEFT JOIN seckill_goods sg ON g.id = sg.goods_id")
 	List<GoodsVO> selectGoodsVoList();
-	
-	@Select("select g.*, sg.seckill_price seckill_goods, sg.stock_count, sg.start_date, sg.end_date " +
-			"from goods g left join seckill_goods sg on g.id = sg.goods_id " +
-			"where g.id = #{goodsId}")
+
+	@Select("SELECT g.*, sg.stock_count, sg.start_date, sg.end_date, sg.seckill_price seckill_price " +
+			"FROM goods g INNER JOIN seckill_goods sg ON g.id = sg.goods_id")
+	List<GoodsVO> selectSeckillGoodsVoList();
+
+	@Select("SELECT g.*, sg.seckill_price seckill_goods, sg.stock_count, sg.start_date, sg.end_date " +
+			"FROM goods g LEFT JOIN seckill_goods sg ON g.id = sg.goods_id " +
+			"WHERE g.id = #{goodsId}")
 	GoodsVO selectGoodsVoByGoodsId(@Param("goodsId") Long goodsId);
 	
 	@Update("update seckill_goods " +
 			"set stock_count = stock_count -1 " + 
 			"where goods_id = #{goodsId}")
 	int updateStock(SeckillGoods seckillGoods);
+
+	@Update({"UPDATE ", TABLE_SECKILL_GOODS, "SET stock_count=stock_count-1 WHERE goods_id=#{goodsId}"})
+	int updateSeckillStock(@Param("goodsId") Long goodsId);
 }

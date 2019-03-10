@@ -7,6 +7,8 @@ import com.janhen.seckill.common.redis.key.SeckillKey;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
+import com.janhen.seckill.service.IGoodsService;
+import com.janhen.seckill.service.IOrderService;
 import com.janhen.seckill.service.ISeckillService;
 import com.janhen.seckill.util.MD5Util;
 import com.janhen.seckill.util.UUIDUtil;
@@ -26,20 +28,20 @@ import java.util.Random;
 public class SeckillServiceImpl implements ISeckillService {
 	
 	@Autowired
-	GoodsServiceImpl goodsServiceImpl;
+	IGoodsService iGoodsService;
 	
 	@Autowired
-	OrderServiceImpl orderServiceImpl;
+	IOrderService iOrderService;
 	
 	@Autowired
     RedisService redisService;
 
 	@Transactional
 	public OrderInfo seckill(SeckillUser user, GoodsVO goods) {
-		boolean isSuccess = goodsServiceImpl.descStock(goods);
+		boolean isSuccess = iGoodsService.descStock(goods);
 		if (isSuccess) {
 			// create orderinfo by user, goodsVo
-			OrderInfo orderInfo = orderServiceImpl.createOrder(user, goods);
+			OrderInfo orderInfo = iOrderService.createOrder(user, goods);
 			
 			return orderInfo;
 		} else {
@@ -143,11 +145,18 @@ public class SeckillServiceImpl implements ISeckillService {
 		return true;
 	}
 
+	/**
+	 * 用户可多次秒杀同一件商品多次，每次都能够返回正确的结果
+	 * 通过传入用户秒杀的时间，配合 DB 中订单创建的时间实现  todo bug
+	 * @param userId
+	 * @param goodsId
+	 * @return
+	 */
 	public Long getSeckillResult(Long userId, Long goodsId) {
 		if (goodsId == null) {
 			return -1L;
 		}
-		SeckillOrder order = orderServiceImpl.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
+		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);    // return recent goods
 		if (order != null) {
 			return order.getId();
 		} else if (checkGoodsIsOver(goodsId)) {

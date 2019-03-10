@@ -8,11 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-//@Profile("dev")
 public class MQConfig {
 
 	public static final String QUEUE_NAME = "queue";
-	public static final String SECKILL_QUEUE = "seckill.queue";
+	public static final String SECKILL_QUEUE = "Seckill.queue";
+
+	public static final String SECKILL_COUNT_LIMIT_QUEUE = "Seckill.Count.Limit.Queue";
 
 	public static final String TOPIC_QUEUE1 = "topic.queue1";
 	public static final String TOPIC_QUEUE2 = "topic.queue2";
@@ -27,6 +28,11 @@ public class MQConfig {
 	@Bean
 	public Queue queue() {
 		return new Queue(SECKILL_QUEUE, true);
+	}
+
+	@Bean
+	public Queue seckillCountLimitQueue() {
+		return new Queue(SECKILL_COUNT_LIMIT_QUEUE, false);
 	}
 
 	// topic
@@ -90,7 +96,6 @@ public class MQConfig {
 		Map<String, Object> map = new HashMap<>();
 		map.put("header1", "value1");
 		map.put("header2", "value2");
-		
 		return BindingBuilder.bind(headerQueue1()).to(headersExchange()).whereAll(map).match();
 	}
 	

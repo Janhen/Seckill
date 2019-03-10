@@ -19,10 +19,12 @@ public enum ResultEnum {
 	MOBILE_EMPTY(500213, "手机密码不能为null"),
 	MOBILE_NOT_EXIST(500214, "手机号不存在"),
 	PASSWORD_ERROR(500215, "密码错误"),
-	
+
+
 	// Goods 5003xx
 	GOODS_NOT_EXIST(500300, "商品不存在"),
-	
+
+
 	// Order  5004xx
 	ORDER_NOT_EXIST(500400, "订单不存在"),
 	
@@ -30,7 +32,11 @@ public enum ResultEnum {
 	// Seckill  5005xx
 	SECKILL_OVER(500500, "商品已经秒杀完毕"),
 	SECKILL_REPEATE(500501, "不能重复秒杀"),
-	SECKILL_FAIL(500503, "秒杀失败");
+	SECKILL_COUNT_LIMIT(500504, "秒杀达到限制"),
+	SECKILL_FAIL(500503, "秒杀失败")
+
+	;
+
 
 	private int code;
 	private String msg;
