@@ -10,6 +10,12 @@
 
 密码: 123456
 ```
+
+说明:   
+对任意秒杀，接口请求限制为 15s 2次;  
+
+
+
 # seckill
 技术：Mybatis,SpringBoot, Redis, RabbitMQ, Thymeleaf  
 描述：商城中特定商品的秒杀，指定时间开启和关闭，通过 JMeter 进行测试高并发下的性能，并进行优化。    

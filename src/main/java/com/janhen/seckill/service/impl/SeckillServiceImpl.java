@@ -145,13 +145,6 @@ public class SeckillServiceImpl implements ISeckillService {
 		return true;
 	}
 
-	/**
-	 * 用户可多次秒杀同一件商品多次，每次都能够返回正确的结果
-	 * 通过传入用户秒杀的时间，配合 DB 中订单创建的时间实现  todo bug
-	 * @param userId
-	 * @param goodsId
-	 * @return
-	 */
 	public Long getSeckillResult(Long userId, Long goodsId) {
 		if (goodsId == null) {
 			return -1L;

@@ -22,7 +22,7 @@ public interface GoodsMapper {
 			"FROM goods g INNER JOIN seckill_goods sg ON g.id = sg.goods_id")
 	List<GoodsVO> selectSeckillGoodsVoList();
 
-	@Select("SELECT g.*, sg.seckill_price seckill_goods, sg.stock_count, sg.start_date, sg.end_date " +
+	@Select("SELECT g.*, sg.seckill_price, sg.stock_count, sg.start_date, sg.end_date " +
 			"FROM goods g LEFT JOIN seckill_goods sg ON g.id = sg.goods_id " +
 			"WHERE g.id = #{goodsId}")
 	GoodsVO selectGoodsVoByGoodsId(@Param("goodsId") Long goodsId);

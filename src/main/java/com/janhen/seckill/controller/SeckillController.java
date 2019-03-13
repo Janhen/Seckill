@@ -1,10 +1,8 @@
 package com.janhen.seckill.controller;
 
-import com.janhen.seckill.common.Const;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
 import com.janhen.seckill.common.rabbitmq.MQSender;
-import com.janhen.seckill.common.rabbitmq.SeckillCountLimitMessage;
 import com.janhen.seckill.common.rabbitmq.SeckillMessage;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.GoodsKey;
@@ -88,7 +86,7 @@ public class SeckillController implements InitializingBean{
 
 	@RequestMapping(value="path", method=RequestMethod.GET)
 	@ResponseBody
-	@AccessLimit(seconds=60, maxCount=2)
+	@AccessLimit(seconds=30, maxCount=2)
 	public ResultVO<String> getSeckillPath(HttpServletRequest request, SeckillUser user,
                                            @RequestParam("goodsId") Long goodsId,
                                            @RequestParam("verifyCode") Integer verfiyCode) {
@@ -106,8 +104,8 @@ public class SeckillController implements InitializingBean{
 		return ResultVO.success(seckillPath);
 	}
 	
-//	@RequestMapping(value={"{path}/do_seckill"}, method={RequestMethod.POST})
-//	@ResponseBody
+	@RequestMapping(value={"{path}/do_seckill"}, method={RequestMethod.POST})
+	@ResponseBody
 	public ResultVO<Integer> seckill0(Model model, SeckillUser user,
 									  @PathVariable("path") String path, @RequestParam("goodsId") Long goodsId) {
 		model.addAttribute("user", user);
@@ -151,7 +149,7 @@ public class SeckillController implements InitializingBean{
 	}
 
 //	@RequestMapping(value={"{path}/do_seckill_count_limit"}, method={RequestMethod.POST})
-	@RequestMapping(value={"{path}/do_seckill"}, method={RequestMethod.POST})
+	/*@RequestMapping(value={"{path}/do_seckill"}, method={RequestMethod.POST})
 	@ResponseBody
 	public ResultVO<Integer> seckillCountLimit(Model model, SeckillUser user,
 									  @PathVariable("path") String path, @RequestParam("goodsId") Long goodsId) {
@@ -193,7 +191,7 @@ public class SeckillController implements InitializingBean{
 		SeckillCountLimitMessage message = new SeckillCountLimitMessage(user, goodsId);
 		sender.sendSeckillCountLimitMessage(message);
 		return ResultVO.success(0);
-	}
+	}*/
 
 	// can extension Business strategy
 

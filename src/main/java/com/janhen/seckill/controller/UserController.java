@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @Controller
-@RequestMapping("/user/")
 @Slf4j
 public class UserController {
 
@@ -29,25 +28,25 @@ public class UserController {
 	@Autowired
     RedisService redisService;
 
-	@RequestMapping(value = "to_login")
+	@RequestMapping(value = {"/user/to_login", "/", "/index"})
 	public String toLogin() {
 		return "login";
 	}
 
-	@RequestMapping(value = "do_login")
+	@RequestMapping(value = "/user/do_login")
 	@ResponseBody
 	public ResultVO<Boolean> doLogin(HttpServletResponse response, @Valid LoginForm loginForm) {  // , BindingResult bindingResult
 		boolean b = userService.login(response, loginForm);
 		return ResultVO.success(b);
 	}
 
-	@RequestMapping("info")
+	@RequestMapping("/user/info")
 	@ResponseBody
 	public ResultVO<SeckillUser> info(Model model, SeckillUser user) {
 		return ResultVO.success(user);
 	}
 
-	@RequestMapping("logout")
+	@RequestMapping("/user/logout")
 	@ResponseBody
 	public ResultVO logout(HttpServletRequest request, HttpServletResponse response) {
 		redisService.del(SeckillUserKey.token, CookieUtil.readLoginToken(request));
