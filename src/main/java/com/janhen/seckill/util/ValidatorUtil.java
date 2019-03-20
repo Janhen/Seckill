@@ -24,6 +24,4 @@ public class ValidatorUtil {
 		}
 		return Pattern.matches(ROLE, src);
 	}
-
-	// todo 各种拦截规则
 }

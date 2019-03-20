@@ -3,6 +3,7 @@ package com.janhen.seckill.service.impl;
 import com.alibaba.druid.util.StringUtils;
 import com.janhen.seckill.common.Const;
 import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.common.redis.key.BasePrefix;
 import com.janhen.seckill.common.redis.key.SeckillKey;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
@@ -10,15 +11,12 @@ import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.IOrderService;
 import com.janhen.seckill.service.ISeckillService;
-import com.janhen.seckill.util.MD5Util;
-import com.janhen.seckill.util.UUIDUtil;
-import com.janhen.seckill.vo.GoodsVO;
+import com.janhen.seckill.util.KeyUtil;
+import com.janhen.seckill.vo.SeckillGoodsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
@@ -37,12 +35,12 @@ public class SeckillServiceImpl implements ISeckillService {
     RedisService redisService;
 
 	@Transactional
-	public OrderInfo seckill(SeckillUser user, GoodsVO goods) {
+	public OrderInfo seckill(SeckillUser user, SeckillGoodsVO goods) {
+		// execute only by message queue
 		boolean isSuccess = iGoodsService.descStock(goods);
 		if (isSuccess) {
-			// create orderinfo by user, goodsVo
+			// create orderinfo by user, goodsVo; may error for unique index
 			OrderInfo orderInfo = iOrderService.createOrder(user, goods);
-			
 			return orderInfo;
 		} else {
 			setGoodsOver(goods.getId());
@@ -51,12 +49,12 @@ public class SeckillServiceImpl implements ISeckillService {
 	}
 
 	private void setGoodsOver(Long goodsId) {
-		redisService.set(SeckillKey.isGoodsOver, "" + goodsId, true);
+		redisService.set(SeckillKey.isGoodsOverByGid, BasePrefix.getKey(goodsId), true);
 	}
 
 	public String generateSeckillPath(SeckillUser user, Long goodsId) {
-		String seckillPath = MD5Util.md5(UUIDUtil.uuid()) + System.currentTimeMillis() % 1000;
-		redisService.set(SeckillKey.getSeckillPath, "" + user.getId() + Const.SPLIT + goodsId, seckillPath);
+		String seckillPath = KeyUtil.geneSeckillPath();
+		redisService.set(SeckillKey.getSeckillPathByUidGid, BasePrefix.getKey(user.getId(), goodsId), seckillPath);
 		return seckillPath;
 	}
 	
@@ -64,8 +62,8 @@ public class SeckillServiceImpl implements ISeckillService {
 		if (user == null || goodsId == null || StringUtils.isEmpty(path)) {
 			return false;
 		}
-		String key = user.getId() + Const.SPLIT + goodsId;
-		String cachedPath = redisService.get(SeckillKey.getSeckillPath, key, String.class);
+		// String key = user.getId() + Const.SPLIT + goodsId;
+		String cachedPath = redisService.get(SeckillKey.getSeckillPathByUidGid, BasePrefix.getKey(user.getId(), goodsId), String.class);
 		return path.equals(cachedPath);
 	}
 
@@ -96,52 +94,29 @@ public class SeckillServiceImpl implements ISeckillService {
 		}
 		
 		// Core. generate a random code
-		String verifyCode = generateVerifyCode(rdm);
+		String verifyCode = KeyUtil.geneVerifyCode(rdm);
 		g.setColor(new Color(0, 100, 0));
 		g.setFont(new Font("Candara", Font.BOLD, 24));
 		g.drawString(verifyCode, 8, 24);
 		g.dispose();
-		
-		// 把验证码存到redis中
-		int rnd = calc(verifyCode);
-		redisService.set(SeckillKey.getSeckillVerifyCode, user.getId()+","+goodsId, rnd);
-		
+
+		// Put verify code result into redis
+		int calcResult = KeyUtil.calc(verifyCode);
+		redisService.set(SeckillKey.getSeckillVerifyCodeResultByUidGid, BasePrefix.getKey(user.getId(), goodsId), calcResult);
 		return image;
 	}
 	
-	private static char[] ops = new char[] {'+', '-', '*'};
 
-	private String generateVerifyCode(Random rdm) {
-		int num1 = rdm.nextInt(10);
-	    int num2 = rdm.nextInt(10);
-		int num3 = rdm.nextInt(10);
-		char op1 = ops[rdm.nextInt(3)];
-		char op2 = ops[rdm.nextInt(3)];
-		String exp = ""+ num1 + op1 + num2 + op2 + num3;
-		return exp;
-	}
-	
-	private static int calc(String exp) {
-		try {
-			ScriptEngineManager manager = new ScriptEngineManager();
-			ScriptEngine engine = manager.getEngineByName("JavaScript");
-			return (Integer) engine.eval(exp);
-		}catch(Exception e) {
-			e.printStackTrace();
-			return 0;
-		}
-	}
-	
 	public boolean checkVerifyCode(SeckillUser user, Long goodsId, Integer verfiyCode) {
 		if (user == null || goodsId == null || verfiyCode == null) {
 			return false;
 		}
-		Integer cachedCode = redisService.get(SeckillKey.getSeckillVerifyCode, user.getId() + "," + goodsId, Integer.class);
+		Integer cachedCode = redisService.get(SeckillKey.getSeckillVerifyCodeResultByUidGid, BasePrefix.getKey(user.getId(), goodsId), Integer.class);
 		if (cachedCode == null || cachedCode != verfiyCode) {
 			return false;
 		}
-		// delete cache
-		redisService.del(SeckillKey.getSeckillVerifyCode, user.getId() + "," + goodsId);
+		// delete cache when check success
+		redisService.del(SeckillKey.getSeckillVerifyCodeResultByUidGid, BasePrefix.getKey(user.getId(), goodsId));
 		return true;
 	}
 
@@ -149,9 +124,9 @@ public class SeckillServiceImpl implements ISeckillService {
 		if (goodsId == null) {
 			return -1L;
 		}
-		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);    // return recent goods
+		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
 		if (order != null) {
-			return order.getId();
+			return order.getOrderId();
 		} else if (checkGoodsIsOver(goodsId)) {
 			return Const.SeckillOrderStatusEnum.OVER.getCode();
 		} else {
@@ -160,11 +135,6 @@ public class SeckillServiceImpl implements ISeckillService {
 	}
 	
 	private boolean checkGoodsIsOver(Long goodsId) {
-		return redisService.exists(SeckillKey.isGoodsOver, "" + goodsId);
+		return redisService.exists(SeckillKey.isGoodsOverByGid, BasePrefix.getKey(goodsId));
 	}
-
-	public static void main(String[] args) {
-		System.out.println(calc("44 + 56 + 2 * 7"));
-	}
-
 }

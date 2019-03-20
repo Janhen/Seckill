@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 
 /**
  * @author Janh
- *
  */
 @Data
 public class Goods {

@@ -1,16 +1,14 @@
 package com.janhen.seckill.service;
 
-import com.janhen.seckill.vo.GoodsVO;
+import com.janhen.seckill.vo.SeckillGoodsVO;
 
 import java.util.List;
 
 public interface IGoodsService {
 
-    GoodsVO selectGoodsVoByGoodsId(Long goodsId);
+    SeckillGoodsVO selectGoodsVoByGoodsId(Long goodsId);
 
-    List<GoodsVO> selectGoodsVoList();
+    List<SeckillGoodsVO> selectSeckillGoodsVoList();
 
-    List<GoodsVO> selectSeckillGoodsVoList();
-
-    boolean descStock(GoodsVO goods);
+    boolean descStock(SeckillGoodsVO goods);
 }

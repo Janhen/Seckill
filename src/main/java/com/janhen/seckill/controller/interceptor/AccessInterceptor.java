@@ -6,10 +6,8 @@ import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.AccessKey;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.impl.SeckillUserServiceImpl;
-import com.janhen.seckill.util.CookieUtil;
 import com.janhen.seckill.util.WebUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -32,9 +30,6 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
-		SeckillUser user = getUserByToken(request, response);
-		UserContext.setUser(user);
-
 		if (handler instanceof HandlerMethod) {
 			HandlerMethod handlerMethod = (HandlerMethod) handler;
 			String methodName = handlerMethod.getMethod().getName();
@@ -48,6 +43,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 			int seconds = accessLimit.seconds();
 			int maxCount = accessLimit.maxCount();
 			boolean needLogin = accessLimit.needLogin();
+			SeckillUser user = UserContext.getUser();
 			if (needLogin) {
 				if (user == null) {
 					log.error("【访问控制】需要登录");
@@ -70,15 +66,5 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 			}
 		}
 		return true;
-	}
-
-	private SeckillUser getUserByToken(HttpServletRequest request, HttpServletResponse response) {
-		String paramToken = request.getParameter(Const.COOKIE_NAME_TOKEN);
-		String cookieToken = CookieUtil.readLoginToken(request);
-		if (StringUtils.isEmpty(paramToken) && StringUtils.isEmpty(cookieToken)) {
-			return null;
-		}
-		String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-		return userService.getByToken(response, token);
 	}
 }

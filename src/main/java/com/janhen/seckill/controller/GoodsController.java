@@ -3,13 +3,14 @@ package com.janhen.seckill.controller;
 import com.alibaba.druid.util.StringUtils;
 import com.janhen.seckill.common.Const;
 import com.janhen.seckill.common.ResultVO;
+import com.janhen.seckill.common.redis.key.BasePrefix;
 import com.janhen.seckill.common.redis.key.GoodsKey;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.ISeckillUserService;
 import com.janhen.seckill.vo.GoodsDetailVO;
-import com.janhen.seckill.vo.GoodsVO;
+import com.janhen.seckill.vo.SeckillGoodsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -49,28 +50,29 @@ public class GoodsController {
 		model.addAttribute("user", user);
 		
 		// 1.take html file from cache
-		String html = redisService.get(GoodsKey.getGoodsList, "", String.class);
+		String html = redisService.get(GoodsKey.getGoodsList, BasePrefix.EMPTY_KEY, String.class);
 		if (!StringUtils.isEmpty(html)) {
 			return html;
 		}
 
 		// 2.view resolver to render model to html and put into cache
-		List<GoodsVO> goodsList = iGoodsService.selectSeckillGoodsVoList();
+		List<SeckillGoodsVO> goodsList = iGoodsService.selectSeckillGoodsVoList();
 		model.addAttribute("goodsList", goodsList);
 		SpringWebContext ctx = new SpringWebContext(request,response,
 				request.getServletContext(),request.getLocale(), model.asMap(), applicationContext);
 		html = viewResolver.getTemplateEngine().process("goods_list", ctx);
 		
 		if (!StringUtils.isEmpty(html)) {
-			redisService.set(GoodsKey.getGoodsList, "", html);
+			redisService.set(GoodsKey.getGoodsList, BasePrefix.EMPTY_KEY, html);
 		}
 		return html;
 	}
 	
 	@RequestMapping(value="detail/{goodsId}")
 	@ResponseBody
-	public ResultVO<GoodsDetailVO> detail00(SeckillUser user, @PathVariable("goodsId") Long goodsId) {
-		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
+	public ResultVO<GoodsDetailVO> detail(SeckillUser user, @PathVariable("goodsId") Long goodsId) {
+		// page static, only have dynamic data
+		SeckillGoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		
 		long startTime = goods.getStartDate().getTime();
 		long endTime = goods.getEndDate().getTime();

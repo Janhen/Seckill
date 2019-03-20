@@ -19,11 +19,4 @@ public class MQSender {
 
 		amqpTemplate.convertAndSend(MQConfig.SECKILL_QUEUE, msg);
 	}
-
-	public void sendSeckillCountLimitMessage(SeckillCountLimitMessage message) {
-		String msg = JSONUtil.beanToString(message);
-		log.info("【消息队列】Send message: {}", msg);
-
-		amqpTemplate.convertAndSend(MQConfig.SECKILL_COUNT_LIMIT_QUEUE, msg);
-	}
 }

@@ -3,15 +3,13 @@ package com.janhen.seckill.service;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.vo.GoodsVO;
+import com.janhen.seckill.vo.SeckillGoodsVO;
 
 public interface IOrderService {
 
     SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId);
 
-    Integer selectSeckillCountByUserIdAndGoodsId(Long userId, Long goodsId);
-
-    OrderInfo createOrder(SeckillUser user, GoodsVO goods);
+    OrderInfo createOrder(SeckillUser user, SeckillGoodsVO goods);
 
     OrderInfo selectOrderInfoById(Long orderId);
 }

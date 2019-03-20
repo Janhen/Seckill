@@ -9,11 +9,9 @@ import org.apache.ibatis.annotations.Update;
 @Mapper
 public interface SeckillUserMapper {
 
-    @Select("select * from seckill_user where id = #{id}")
+    @Select("SELECT * FROM seckill_user WHERE id = #{id}")
     SeckillUser getById(@Param("id") long id);
 
-    @Update("update seckill_user set password = #{password} where id = #{id}")
+    @Update("UPDATE seckill_user SET password = #{password} WHERE id = #{id}")
     void updatePasswordById(@Param("password") String dbPass, @Param("id") long id);
-
-
 }

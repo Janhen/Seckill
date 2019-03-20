@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SeckillMessage {
-	// 通过 DB 中 UNIQUE_INDEX 控制一个用户只能秒杀一件商品
 	private SeckillUser user;
 	private long        goodsId;
 }

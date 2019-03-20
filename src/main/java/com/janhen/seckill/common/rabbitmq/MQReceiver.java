@@ -1,6 +1,5 @@
 package com.janhen.seckill.common.rabbitmq;
 
-import com.janhen.seckill.common.Const;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
@@ -8,17 +7,15 @@ import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.IOrderService;
 import com.janhen.seckill.service.ISeckillService;
 import com.janhen.seckill.util.JSONUtil;
-import com.janhen.seckill.vo.GoodsVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.janhen.seckill.vo.SeckillGoodsVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class MQReceiver {
-	
-	private static Logger log = LoggerFactory.getLogger(MQReceiver.class);
 
 	@Autowired
 	RedisService redisService;
@@ -40,7 +37,7 @@ public class MQReceiver {
 		SeckillUser user = seckillMessage.getUser();
 		long goodsId = seckillMessage.getGoodsId();
 
-		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
+		SeckillGoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		Integer stock = goods.getStockCount();
 		if (stock == null || stock <= 0) {          // already have not stock
 			return;
@@ -54,32 +51,9 @@ public class MQReceiver {
 		if (order != null) {
 			return;
 		}
-		
+
+		// control seckill and unique
 		iSeckillService.seckill(user, goods);
 		log.info("入库成功！！");
-	}
-
-	@RabbitListener(queues = {MQConfig.SECKILL_COUNT_LIMIT_QUEUE})
-	public void receiveSeckillCountLimitMessage(String message) {
-		log.info("【消息队列】Receive message: {}", message);
-
-		SeckillCountLimitMessage seckillCountLimitMessage = JSONUtil.stringToBean(message, SeckillCountLimitMessage.class);
-		SeckillUser user = seckillCountLimitMessage.getUser();
-		long goodsId = seckillCountLimitMessage.getGoodsId();
-
-		GoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
-		Integer stock = goods.getStockCount();
-		if (stock == null || stock <= 0) {
-			log.info("【消息队列】用户: {}, 排队后无商品: {} 可供秒杀", user.getId(), goodsId);
-			return ;
-		}
-		// judge Because multi thread, user time interval
-		Integer seckillCnt = iOrderService.selectSeckillCountByUserIdAndGoodsId(user.getId(), goodsId);
-		if (seckillCnt > Const.MAX_SECKILL_COUNT) {
-			log.error("【消息队列】用户: {}, 秒杀商品: {}, 达到上限", user.getId(), goodsId);
-		}
-
-		iSeckillService.seckill(user, goods);
-		log.info("入库成功!!");
 	}
 }

@@ -19,8 +19,6 @@ public class OrderMapperTest {
 
     @Test
     public void selectSeckillCountByUserIdAndGoodsId() {
-        int i = orderMapper.selectSeckillCountByUserIdAndGoodsId(18852860000L, 0L);
-        System.out.println(i);
     }
 
     @Test

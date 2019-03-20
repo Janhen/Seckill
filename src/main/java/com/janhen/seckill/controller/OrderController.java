@@ -6,7 +6,7 @@ import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.IOrderService;
-import com.janhen.seckill.vo.GoodsVO;
+import com.janhen.seckill.vo.SeckillGoodsVO;
 import com.janhen.seckill.vo.OrderDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,14 +30,13 @@ public class OrderController {
 		if (user == null) {
 			return ResultVO.error(ResultEnum.SERVER_ERROR);
 		}
-		
 		OrderInfo order = iOrderService.selectOrderInfoById(orderId);
 		// assemble orderDetailVO
 		Long goodsId = order.getGoodsId();
-		GoodsVO goodsVO = iGoodsService.selectGoodsVoByGoodsId(goodsId);
+		SeckillGoodsVO seckillGoodsVO = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 
 		OrderDetailVO orderDetailVO = new OrderDetailVO();
-		orderDetailVO.setGoods(goodsVO);
+		orderDetailVO.setGoods(seckillGoodsVO);
 		orderDetailVO.setOrder(order);
 		return ResultVO.success(orderDetailVO);
 	}

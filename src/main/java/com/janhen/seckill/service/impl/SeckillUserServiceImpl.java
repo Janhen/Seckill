@@ -1,16 +1,17 @@
 package com.janhen.seckill.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
-import com.janhen.seckill.dao.SeckillUserMapper;
-import com.janhen.seckill.common.exeception.SeckillException;
-import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.common.redis.RedisService;
-import com.janhen.seckill.common.redis.key.SeckillUserKey;
 import com.janhen.seckill.common.ResultEnum;
+import com.janhen.seckill.common.exeception.SeckillException;
+import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.common.redis.key.BasePrefix;
+import com.janhen.seckill.common.redis.key.SeckillUserKey;
+import com.janhen.seckill.dao.SeckillUserMapper;
+import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.ISeckillUserService;
 import com.janhen.seckill.util.CookieUtil;
+import com.janhen.seckill.util.KeyUtil;
 import com.janhen.seckill.util.MD5Util;
-import com.janhen.seckill.util.UUIDUtil;
 import com.janhen.seckill.vo.form.LoginForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 @Service
 @Slf4j
 public class SeckillUserServiceImpl implements ISeckillUserService {
-
 
     @Autowired
     SeckillUserMapper seckillUserMapper;
@@ -82,7 +82,7 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
         }
 
         // distributed session, only generate in here
-        String token = UUIDUtil.uuid();
+        String token = KeyUtil.geneToken();
         redisService.set(SeckillUserKey.token, token, user);
         CookieUtil.writeLoginToken(response, token);
         return true;
@@ -93,6 +93,8 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
      * 失效  : 先从 cache 取，没得到，则从 db 中取，成功后，放到 cache 中
      * 命中 : 从 cache 中取，取到后返回
      * 更新 : 先把数据放到 db, 成功后，让 cache 失效
+     *
+     * 先更新 DB， 后删除缓存策略
      */
     public boolean updatePassword(String token, long id, String formPass) {
         SeckillUser user = getById(id);
@@ -105,10 +107,9 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
         seckillUserMapper.updatePasswordById(dbPass, id);
 
         // make cache invalid
-        redisService.del(SeckillUserKey.getById, "" + id);
+        redisService.del(SeckillUserKey.getById, BasePrefix.getKey(id));
         user.setPassword(dbPass);
         redisService.set(SeckillUserKey.token, token, user);
-
         return true;
     }
 }

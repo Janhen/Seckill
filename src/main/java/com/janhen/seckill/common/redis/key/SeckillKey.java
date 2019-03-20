@@ -8,10 +8,10 @@ public class SeckillKey extends BasePrefix{
 		super(expireSeconds, prefix);
 	}
 	
-	public static SeckillKey isGoodsOver = new SeckillKey(Const.PERMANENT, "goodsOver");
+	public static SeckillKey isGoodsOverByGid = new SeckillKey(Const.PERMANENT, "goodsOver");
 
-	public static SeckillKey getSeckillPath = new SeckillKey(Const.MINUTE, "seckillPath");
+	public static SeckillKey getSeckillPathByUidGid = new SeckillKey(Const.MINUTE, "seckillPath");
 
 	/** 某件商品的秒杀验证码. */
-	public static SeckillKey getSeckillVerifyCode = new SeckillKey(5*Const.MINUTE, "verifyCode");
+	public static SeckillKey getSeckillVerifyCodeResultByUidGid = new SeckillKey(5*Const.MINUTE, "verifyCode");
 }

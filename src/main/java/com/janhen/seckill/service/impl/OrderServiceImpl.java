@@ -1,14 +1,17 @@
 package com.janhen.seckill.service.impl;
 
 
-import com.janhen.seckill.dao.OrderMapper;
+import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.exeception.SeckillException;
+import com.janhen.seckill.common.redis.RedisService;
+import com.janhen.seckill.common.redis.key.BasePrefix;
+import com.janhen.seckill.common.redis.key.OrderKey;
+import com.janhen.seckill.dao.OrderMapper;
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.service.IOrderService;
-import com.janhen.seckill.vo.GoodsVO;
+import com.janhen.seckill.vo.SeckillGoodsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,25 +27,19 @@ public class OrderServiceImpl implements IOrderService {
 	@Autowired
 	OrderMapper orderMapper;
 
+	@Autowired
+	RedisService redisService;
+
 	public SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId) {
-		SeckillOrder order = orderMapper.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
-		return order;
+		SeckillOrder seckillOrder = redisService.get(OrderKey.getSeckillOrderByUidGid, BasePrefix.getKey(userId, goodsId), SeckillOrder.class);
+		if (seckillOrder == null) {
+			seckillOrder = orderMapper.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
+		}
+		return seckillOrder;
 	}
 
-	/**
-	 * 控制每个用户秒杀指定商品的数量
-	 * 可添加时间字段进一步扩展
-	 * @param userId
-	 * @param goodsId
-	 * @return
-	 */
-	public Integer selectSeckillCountByUserIdAndGoodsId(Long userId, Long goodsId) {
-		int cnt = orderMapper.selectSeckillCountByUserIdAndGoodsId(userId, goodsId);
-		return cnt;
-	}
-	
 	@Transactional
-	public OrderInfo createOrder(SeckillUser user, GoodsVO goods) {
+	public OrderInfo createOrder(SeckillUser user, SeckillGoodsVO goods) {
 		OrderInfo orderInfo = new OrderInfo();
 		orderInfo.setUserId(user.getId());
 		orderInfo.setGoodsId(goods.getId());
@@ -53,16 +50,19 @@ public class OrderServiceImpl implements IOrderService {
 		orderInfo.setGoodsPrice(goods.getSeckillPrice());
 		orderInfo.setOrderChannel(0);
 		orderInfo.setStatus(1);
-		
-		// SelectKey 返回注入到 orderInfor 的 id 中.
+		// SelectKey 返回注入到 orderInfo 的 id 中.
 		orderMapper.insertOrderInfo(orderInfo);
 		
 		SeckillOrder seckillOrder = new SeckillOrder();
 		seckillOrder.setGoodsId(goods.getId());
-		seckillOrder.setOrderId(orderInfo.getId());
+		seckillOrder.setOrderId(orderInfo.getId());      // have orderId
 		seckillOrder.setUserId(user.getId());
-		
+
+		// control to prevent oversold
 		orderMapper.insertSeckillOrder(seckillOrder);
+
+		// put into redis
+		redisService.set(OrderKey.getSeckillOrderByUidGid, BasePrefix.getKey(user.getId(), goods.getId()), seckillOrder);
 		return orderInfo;
 	}
 
@@ -74,5 +74,4 @@ public class OrderServiceImpl implements IOrderService {
 		}
 		return orderInfo;
 	}
-
 }

@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GoodsDetailVO {
 
-	private int         seckillStatus	= Const.SeckillStatusEnum.NOT_BEGIN.getCode();
-	private int         remainSeconds	= 0;
-	private SeckillUser user;
-	private GoodsVO     goods;
+	private int            seckillStatus	= Const.SeckillStatusEnum.NOT_BEGIN.getCode();
+	private int            remainSeconds	= 0;
+	private SeckillUser    user;
+	private SeckillGoodsVO goods;
 }

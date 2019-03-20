@@ -1,6 +1,7 @@
 package com.janhen.seckill.config;
 
 import com.janhen.seckill.controller.interceptor.AccessInterceptor;
+import com.janhen.seckill.controller.interceptor.SessionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -17,6 +18,9 @@ public class WebConfig extends WebMvcConfigurerAdapter{
 	
 	@Autowired
 	AccessInterceptor accessInterceptor;
+
+	@Autowired
+	SessionInterceptor sessionInterceptor;
 	
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
@@ -25,6 +29,7 @@ public class WebConfig extends WebMvcConfigurerAdapter{
 	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(sessionInterceptor);
 		registry.addInterceptor(accessInterceptor);
 	}
 }

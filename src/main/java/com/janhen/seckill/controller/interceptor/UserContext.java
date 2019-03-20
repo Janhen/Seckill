@@ -12,4 +12,8 @@ public class UserContext {
 	public static SeckillUser getUser() {
 		return userHolder.get();
 	}
+
+	public static void deleteUser() {
+		userHolder.remove();
+	}
 }

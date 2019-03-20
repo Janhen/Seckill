@@ -2,13 +2,13 @@ package com.janhen.seckill.service;
 
 import com.janhen.seckill.pojo.OrderInfo;
 import com.janhen.seckill.pojo.SeckillUser;
-import com.janhen.seckill.vo.GoodsVO;
+import com.janhen.seckill.vo.SeckillGoodsVO;
 
 import java.awt.image.BufferedImage;
 
 public interface ISeckillService {
 
-    OrderInfo seckill(SeckillUser user, GoodsVO goods);
+    OrderInfo seckill(SeckillUser user, SeckillGoodsVO goods);
 
     String generateSeckillPath(SeckillUser user, Long goodsId);
 

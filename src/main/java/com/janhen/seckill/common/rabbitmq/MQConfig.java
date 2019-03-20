@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 public class MQConfig {
 
 	public static final String QUEUE_NAME = "queue";
-	public static final String SECKILL_QUEUE = "Seckill.queue";
+	public static final String SECKILL_QUEUE = "Seckill.queue.1";
 
-	public static final String SECKILL_COUNT_LIMIT_QUEUE = "Seckill.Count.Limit.Queue";
+	public static final String SECKILL_COUNT_LIMIT_QUEUE = "Seckill.Count.Limit.Queue.1";
 
 	public static final String TOPIC_QUEUE1 = "topic.queue1";
 	public static final String TOPIC_QUEUE2 = "topic.queue2";
