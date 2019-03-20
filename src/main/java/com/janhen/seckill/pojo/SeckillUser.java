@@ -6,7 +6,6 @@ import java.util.Date;
 
 @Data
 public class SeckillUser {
-
 	private Long	id;
 	private String	nickname;
 	private String	password;

@@ -3,7 +3,7 @@ package com.janhen.seckill.pojo;
 import lombok.Data;
 
 @Data
-public class SeckillOrder {
+	public class SeckillOrder {
 	private Long id;
 	private Long userId;
 	private Long orderId;
