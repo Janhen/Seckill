@@ -1,5 +1,6 @@
-上线: 
-[地址](https://seckill.janh80.com/)
+## 在线演示
+
+[Seckill](https://seckill.janh80.com/)
 
 ```html
 账号: 18852860001~18852860012
@@ -13,7 +14,7 @@
 
 
 
-# seckill
+## seckill
 技术：Mybatis,SpringBoot, Redis, RabbitMQ, Thymeleaf  
 描述：商城中特定商品的秒杀，指定时间开启和关闭，通过 JMeter 进行测试高并发下的性能，并进行优化。    
 
@@ -26,9 +27,9 @@
 
 
 
-## 项目架构：
+## 项目架构
 
-![1552525386186](assets\1552525386186.png)
+![1553129833341](assets/1553129833341.png)
 
 
 
