@@ -19,7 +19,13 @@ public class MD5Util {
 		String str = ""+dbSalt.charAt(0)+dbSalt.charAt(2) + form +dbSalt.charAt(5) + dbSalt.charAt(4);
 		return md5(str);
 	}
-	
+
+	/**
+	 * user for test
+	 * @param input
+	 * @param dbSalt
+	 * @return
+	 */
 	public static String inputPassToDBPass(String input, String dbSalt) {
 		String formPass = inputPassToFormPass(input);
 		String dbPass = formPassToDBPass(formPass, dbSalt);

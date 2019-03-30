@@ -4,7 +4,10 @@ import com.janhen.seckill.common.Const;
 
 public class OrderKey extends BasePrefix {
 
-	public static OrderKey getSeckillOrderByUidGid = new OrderKey(Const.DAY, "SeckillOrder" + Const.SPLIT);
+	/**
+	 * use for querying order after seckill success
+	 */
+	public static OrderKey getSeckillOrderByUidGid = new OrderKey(1 * Const.DAY, "SeckillOrder" + Const.SPLIT);
 
 	public OrderKey(String prefix) {
 		super(prefix);

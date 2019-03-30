@@ -9,6 +9,9 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+/**
+ * injected user session object in method parameter
+ */
 @Component
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 

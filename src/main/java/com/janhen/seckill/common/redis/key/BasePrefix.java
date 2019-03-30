@@ -19,8 +19,10 @@ public abstract class BasePrefix implements KeyPrefix{
 		this(Const.PERMANENT, prefix);
 	}
 
-	public static String getKey(Long arg) {
-		return arg.toString();
+	// key generate
+
+	public static String getKey(Long arg1) {
+		return arg1.toString();
 	}
 
 	public static String getKey(Long arg1, Long arg2) {

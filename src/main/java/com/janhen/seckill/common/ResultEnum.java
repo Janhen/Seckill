@@ -32,7 +32,6 @@ public enum ResultEnum {
 	SECKILL_FAIL(500503, "秒杀失败")
 	;
 
-
 	private int code;
 	private String msg;
 	

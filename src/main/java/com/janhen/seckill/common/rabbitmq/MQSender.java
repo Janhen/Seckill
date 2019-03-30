@@ -15,7 +15,7 @@ public class MQSender {
 	
 	public void sendSeckillMessage(SeckillMessage message) {
 		String msg = JSONUtil.beanToString(message);
-		log.info("【消息队列】Send message : {}", msg);
+		log.info("【消息队列】Send message: {}", msg);
 
 		amqpTemplate.convertAndSend(MQConfig.SECKILL_QUEUE, msg);
 	}

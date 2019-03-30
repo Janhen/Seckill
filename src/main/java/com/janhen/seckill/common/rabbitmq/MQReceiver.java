@@ -31,7 +31,7 @@ public class MQReceiver {
 	
 	@RabbitListener(queues={MQConfig.SECKILL_QUEUE})
 	public void receiveSeckillMessage(String message) {
-		log.info("【消息队列】receive message : " + message);
+		log.info("【消息队列】Receive message : {}", message);
 		
 		SeckillMessage seckillMessage = JSONUtil.stringToBean(message, SeckillMessage.class);
 		SeckillUser user = seckillMessage.getUser();
@@ -39,21 +39,21 @@ public class MQReceiver {
 
 		SeckillGoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		Integer stock = goods.getStockCount();
-		if (stock == null || stock <= 0) {          // already have not stock
+		if (stock == null || stock <= 0) {          // check is or not have stock
 			return;
 		}
-		if (user == null || goods == null) {
+		if (user == null || goods == null) {          // check message from queue
 			log.error("【消息队列】传入参数有误 {}, {}", user, goodsId);
 			return ;
 		}
-		// already seckill, judge two time;  First time: request seckill; Second time:
+		// check is or not seckill
 		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
 		if (order != null) {
+			log.error("【消息队列】重复的秒杀, userId: {}, goodsId: {}", user.getId(), goodsId);
 			return;
 		}
-
 		// control seckill and unique
 		iSeckillService.seckill(user, goods);
-		log.info("入库成功！！");
+		log.info("【消息队列】入库成功！！");
 	}
 }

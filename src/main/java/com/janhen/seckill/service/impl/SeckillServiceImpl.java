@@ -34,21 +34,28 @@ public class SeckillServiceImpl implements ISeckillService {
 	@Autowired
     RedisService redisService;
 
+	/**
+	 * Seckill core logic, only invoke by message queue
+	 * @param user
+	 * @param goods
+	 * @return
+	 */
 	@Transactional
 	public OrderInfo seckill(SeckillUser user, SeckillGoodsVO goods) {
-		// execute only by message queue
 		boolean isSuccess = iGoodsService.descStock(goods);
 		if (isSuccess) {
 			// create orderinfo by user, goodsVo; may error for unique index
 			OrderInfo orderInfo = iOrderService.createOrder(user, goods);
 			return orderInfo;
 		} else {
+			// stock>0 execute, fail mean have no stock
 			setGoodsOver(goods.getId());
 			return null;
 		}
 	}
 
 	private void setGoodsOver(Long goodsId) {
+		// use for seckill result query
 		redisService.set(SeckillKey.isGoodsOverByGid, BasePrefix.getKey(goodsId), true);
 	}
 
@@ -62,7 +69,6 @@ public class SeckillServiceImpl implements ISeckillService {
 		if (user == null || goodsId == null || StringUtils.isEmpty(path)) {
 			return false;
 		}
-		// String key = user.getId() + Const.SPLIT + goodsId;
 		String cachedPath = redisService.get(SeckillKey.getSeckillPathByUidGid, BasePrefix.getKey(user.getId(), goodsId), String.class);
 		return path.equals(cachedPath);
 	}
@@ -115,7 +121,7 @@ public class SeckillServiceImpl implements ISeckillService {
 		if (cachedCode == null || cachedCode != verfiyCode) {
 			return false;
 		}
-		// delete cache when check success
+		// delete cache when check success(only can use one time)
 		redisService.del(SeckillKey.getSeckillVerifyCodeResultByUidGid, BasePrefix.getKey(user.getId(), goodsId));
 		return true;
 	}

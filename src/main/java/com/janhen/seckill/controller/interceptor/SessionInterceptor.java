@@ -24,13 +24,14 @@ public class SessionInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
 
-        log.info("【session】获取更新");
+        // log.info("【Session】获取更新");
         SeckillUser user = getUserByToken(request, response);
         UserContext.setUser(user);
         return true;
     }
 
     private SeckillUser getUserByToken(HttpServletRequest request, HttpServletResponse response) {
+        // take from cookie OR URL rewrite
         String paramToken = request.getParameter(Const.COOKIE_NAME_TOKEN);
         String cookieToken = CookieUtil.readLoginToken(request);
         if (StringUtils.isEmpty(paramToken) && StringUtils.isEmpty(cookieToken)) {

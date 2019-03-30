@@ -2,6 +2,7 @@ package com.janhen.seckill.common.redis;
 
 import com.janhen.seckill.common.redis.key.KeyPrefix;
 import com.janhen.seckill.util.JSONUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class RedisService {
 
 	@Autowired
@@ -49,14 +51,14 @@ public class RedisService {
 	}
 
 	public Long incr(KeyPrefix prefix, String key) {
-		try (Jedis jedis = jedisPool.getResource();) {
+		try (Jedis jedis = jedisPool.getResource()) {
 			String realKey = prefix.getPrefix() + key;
 			return jedis.incr(realKey);
 		}
 	}
 
 	public Long decr(KeyPrefix prefix, String key) {
-		try (Jedis jedis = jedisPool.getResource();) {
+		try (Jedis jedis = jedisPool.getResource()) {
 			String realKey = prefix.getPrefix() + key;
 			return jedis.decr(realKey);
 		}
@@ -65,7 +67,7 @@ public class RedisService {
 	// General
 	
 	public boolean del(KeyPrefix prefix, String key) {
-		try (Jedis jedis = jedisPool.getResource();) {
+		try (Jedis jedis = jedisPool.getResource()) {
 			String realKey = prefix.getPrefix() + key;
 			Long rowCount = jedis.del(realKey);
 			return rowCount > 0;
@@ -79,6 +81,11 @@ public class RedisService {
 		} 
 	}
 
+	/**
+	 * delete by prefix through scan prefix result
+	 * @param prefix
+	 * @return
+	 */
 	public boolean delete(KeyPrefix prefix) {
 		if(prefix == null) {
 			return false;
@@ -93,7 +100,7 @@ public class RedisService {
 			jedis.del(keys.toArray(new String[0]));
 			return true;
 		} catch (final Exception e) {
-			e.printStackTrace();
+			log.error("【Redis】 删除失败", e);
 			return false;
 		} finally {
 			if(jedis != null) {
@@ -102,22 +109,26 @@ public class RedisService {
 		}
 	}
 
+	/**
+	 * scan cursor [match pattern] [count count]
+	 * @param key
+	 * @return
+	 */
 	public List<String> scanKeys(String key) {
 		Jedis jedis = null;
 		try {
 			jedis = jedisPool.getResource();
-			List<String> keys = new ArrayList<String>();
+			List<String> keys = new ArrayList<>();
 			String cursor = "0";
-			ScanParams sp = new ScanParams();
-			sp.match("*"+key+"*");
-			sp.count(100);
+			// builder generate
+			ScanParams sp = new ScanParams().match("*" + key + "*").count(100);
 			do{
 				ScanResult<String> ret = jedis.scan(cursor, sp);
 				List<String> result = ret.getResult();
 				if(result!=null && result.size() > 0){
 					keys.addAll(result);
 				}
-				// new cursor to scan
+				// new cursor to scan, as invariance
 				cursor = ret.getStringCursor();
 			}while(!cursor.equals("0"));
 			return keys;

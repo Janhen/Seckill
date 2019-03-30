@@ -31,7 +31,6 @@ public class OrderController {
 			return ResultVO.error(ResultEnum.SERVER_ERROR);
 		}
 		OrderInfo order = iOrderService.selectOrderInfoById(orderId);
-		// assemble orderDetailVO
 		Long goodsId = order.getGoodsId();
 		SeckillGoodsVO seckillGoodsVO = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 

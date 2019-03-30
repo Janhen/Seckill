@@ -1,9 +1,9 @@
 package com.janhen.seckill.controller.interceptor;
 
-import com.janhen.seckill.common.Const;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.AccessKey;
+import com.janhen.seckill.common.redis.key.BasePrefix;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.impl.SeckillUserServiceImpl;
 import com.janhen.seckill.util.WebUtil;
@@ -40,6 +40,8 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 				return true;
 			}
 
+			// handle limit
+
 			int seconds = accessLimit.seconds();
 			int maxCount = accessLimit.maxCount();
 			boolean needLogin = accessLimit.needLogin();
@@ -53,7 +55,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 			}
 
 			AccessKey accessKeyPrefix = AccessKey.createByExpire(seconds);
-			String key = request.getRequestURI() + Const.SPLIT + user.getId();
+			String key = BasePrefix.getKey(request.getRequestURI(), user.getId());
 			Integer curAccessCnt = redisService.get(accessKeyPrefix, key, Integer.class);
 			if (curAccessCnt == null) {
 				redisService.set(accessKeyPrefix, key, 1);

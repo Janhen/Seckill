@@ -9,9 +9,10 @@ public class AccessKey extends BasePrefix{
 		super(expireSeconds, prefix);
 	}
 
-	// use for user defined
+	/**
+	 * use for user defined @AccessLimit annotation
+	 */
 	public static AccessKey createByExpire(int expireSeconds) {
-		return new AccessKey(expireSeconds, "access");
+		return new AccessKey(expireSeconds, "accessLimit");
 	}
-
 }

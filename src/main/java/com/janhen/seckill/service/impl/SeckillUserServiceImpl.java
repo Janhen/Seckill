@@ -43,15 +43,10 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
         return seckillUser;
     }
 
-    /**
-     * 分布式 session ： 从 redis 中获得带有 expires 的token
-     * 每次访问自动更新 Cookie 过期时间
-     */
     public SeckillUser getByToken(HttpServletResponse response, String token) {
         if (StringUtils.isEmpty(token)) {
             return null;
         }
-
         // take from cache AND reset expire time(cache, cookie)
         SeckillUser user = redisService.get(SeckillUserKey.token, token, SeckillUser.class);
         if (user != null) {
@@ -81,21 +76,12 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
             throw new SeckillException(ResultEnum.PASSWORD_ERROR);
         }
 
-        // distributed session, only generate in here
         String token = KeyUtil.geneToken();
         redisService.set(SeckillUserKey.token, token, user);
         CookieUtil.writeLoginToken(response, token);
         return true;
     }
 
-    /**
-     * Cache Aside Pattern :
-     * 失效  : 先从 cache 取，没得到，则从 db 中取，成功后，放到 cache 中
-     * 命中 : 从 cache 中取，取到后返回
-     * 更新 : 先把数据放到 db, 成功后，让 cache 失效
-     *
-     * 先更新 DB， 后删除缓存策略
-     */
     public boolean updatePassword(String token, long id, String formPass) {
         SeckillUser user = getById(id);
         if (user == null) {

@@ -39,7 +39,7 @@ public class GoodsController {
 	RedisService redisService;
 
 	@Autowired
-	ThymeleafViewResolver viewResolver;  // manual render need  viewResolver & context
+	ThymeleafViewResolver viewResolver;
 	
 	@Autowired
 	ApplicationContext applicationContext;

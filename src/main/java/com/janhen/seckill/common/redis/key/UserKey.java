@@ -7,5 +7,4 @@ public class UserKey extends BasePrefix{
 	}
 	public static UserKey getById = new UserKey("id");
 	public static UserKey NAME = new UserKey("name");
-
 }

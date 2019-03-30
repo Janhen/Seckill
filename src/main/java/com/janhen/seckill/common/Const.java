@@ -12,6 +12,9 @@ public class Const {
 
     public final static int PERMANENT = 0;
 
+    /**
+     * token expired time, use for distributed seesion
+     */
     public static final int TOKEN_EXPIRE = 3600 * 2;
 
     public final static String SALT = "1a2b3c4d";
@@ -19,8 +22,6 @@ public class Const {
     public final static String COOKIE_NAME_TOKEN = "token";
 
     public final static String SPLIT = ":";
-
-    public final static int MAX_SECKILL_COUNT = 5;
 
     @Getter
     public enum SeckillOrderStatusEnum {

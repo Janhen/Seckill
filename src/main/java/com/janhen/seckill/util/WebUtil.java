@@ -7,11 +7,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 
 @Slf4j
 public class WebUtil {
 
+	/**
+	 * render message as response
+	 * @param response
+	 * @param obj
+	 */
 	public static void render(HttpServletResponse response, Object obj) {
 		response.setContentType("application/json;charset=UTF-8");
 
@@ -28,25 +32,6 @@ public class WebUtil {
 			out.flush();
 		} catch (Exception e) {
 			log.error("【参数返回】解析异常", e);
-		}
-	}
-
-	public static void renderWriter(HttpServletResponse response, Object obj) {
-		// 重置，并数据协商
-		response.reset();
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType("application/json;charset=UTF-8");
-
-		PrintWriter out = null;
-		try {
-			out = response.getWriter();
-			out.print(JSONUtil.beanToString(obj));
-			// out.write(JSONUtil.beanToString(obj));
-			out.flush();
-		} catch (Exception e) {
-			log.error("【参数返回】", e);
-		} finally {
-			out.close();
 		}
 	}
 }

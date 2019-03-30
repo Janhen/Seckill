@@ -27,11 +27,6 @@ public class MQConfig {
 		return new Queue(SECKILL_QUEUE, true);
 	}
 
-	@Bean
-	public Queue seckillCountLimitQueue() {
-		return new Queue(SECKILL_COUNT_LIMIT_QUEUE, false);
-	}
-
 	// topic
 
 //	@Bean
@@ -95,5 +90,4 @@ public class MQConfig {
 //		map.put("header2", "value2");
 //		return BindingBuilder.bind(headerQueue1()).to(headersExchange()).whereAll(map).match();
 //	}
-	
 }
