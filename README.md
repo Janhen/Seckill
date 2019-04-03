@@ -1,6 +1,6 @@
 ## 在线演示
 
-[Seckill](https://seckill.janh80.com/)
+[Seckill](http://103.125.232.152:8082/user/to_login)
 
 ```html
 账号: 18852860001~18852860012

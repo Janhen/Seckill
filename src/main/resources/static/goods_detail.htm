@@ -19,12 +19,8 @@ $(function() {
 	getDetailAjax();
 });
 
-/**
- * 根据正则获取请求参数中的数据
- */
 function getDetailAjax() {
 	var goodsId = g_getQueryString("goodsId");
-	
 	$.ajax({
 		url : "/goods/detail/" + goodsId,
 		type : "GET",

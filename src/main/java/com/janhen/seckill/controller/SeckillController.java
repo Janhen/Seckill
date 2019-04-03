@@ -126,7 +126,7 @@ public class SeckillController implements InitializingBean {
 			return ResultVO.error(ResultEnum.SECKILL_OVER);
 		}
 		
-		// 3.decr stock from redis cache
+		// 3.decrease stock from redis cache AND have additional function that judge seckill goods is over
 		Long stock = redisService.decr(GoodsKey.getSeckillGoodsStockByGid, BasePrefix.getKey(goodsId));
 		if (stock < 0) {
 			localOverMap.put(goodsId, true);

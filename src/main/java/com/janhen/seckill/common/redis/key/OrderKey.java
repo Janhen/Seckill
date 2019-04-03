@@ -5,7 +5,8 @@ import com.janhen.seckill.common.Const;
 public class OrderKey extends BasePrefix {
 
 	/**
-	 * use for querying order after seckill success
+	 * object cache:
+	 * like a dp table key(userId,goodsId) val(seckillOrder)
 	 */
 	public static OrderKey getSeckillOrderByUidGid = new OrderKey(1 * Const.DAY, "SeckillOrder" + Const.SPLIT);
 
@@ -16,5 +17,4 @@ public class OrderKey extends BasePrefix {
 	public OrderKey(int expireSeconds, String prefix) {
 		super(expireSeconds, prefix);
 	}
-
 }

@@ -36,10 +36,7 @@ gen
 /.classpath
 /.project
 /src/main/resources.prod/application.properties
-/src/main/java/com/janhen/seckill/config/拦截器.md
-/src/main/java/com/janhen/seckill/common/redis/Redis 相关.md
 /src/main/resources.dev/application.properties
 /src/main/java/com/janhen/seckill/controller/TestController.java
-/pic/
 /src/main/java/com/janhen/seckill/util/DBUtil.java
 /src/main/java/com/janhen/seckill/util/TestUtil.java

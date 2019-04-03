@@ -9,6 +9,9 @@ public class GoodsKey extends BasePrefix{
 	 */
 	public static final GoodsKey getGoodsList = new GoodsKey(Const.MINUTE, "goodslist");
 
+	/**
+	 * can cache some hot goods
+	 */
 	public static final GoodsKey getGoodsDetailByGid = new GoodsKey(Const.MINUTE, "goodsdetail" + Const.SPLIT);
 
 	/**

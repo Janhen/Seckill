@@ -1,6 +1,3 @@
-/**
- * 用于自定义全局使用的 js函数与变量
- */
 // md5 salt
 var g_passsword_salt="1a2b3c4d";
 
@@ -10,7 +7,7 @@ function g_showLoading(){
 	return idx;
 }
 
-// get param from request url
+// get param from request url in address bar
 function g_getQueryString(name) {
 	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
 	// remove ?        ?name=zhang&age=34&gender=male       ==>> name=zhang
@@ -20,7 +17,7 @@ function g_getQueryString(name) {
 	return null;
 };
 
-// formate Date 
+// format Date
 Date.prototype.format = function (format) {  
     var args = {  
         "M+": this.getMonth() + 1,  
