@@ -23,8 +23,6 @@ public class SessionInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-
-        // log.info("【Session】获取更新");
         SeckillUser user = getUserByToken(request, response);
         UserContext.setUser(user);
         return true;

@@ -53,18 +53,19 @@ public class AccessInterceptor extends HandlerInterceptorAdapter{
 					return false;
 				}
 			}
-
-			AccessKey accessKeyPrefix = AccessKey.createByExpire(seconds);
-			String key = BasePrefix.getKey(request.getRequestURI(), user.getId());
-			Integer curAccessCnt = redisService.get(accessKeyPrefix, key, Integer.class);
-			if (curAccessCnt == null) {
-				redisService.set(accessKeyPrefix, key, 1);
-			} else if (curAccessCnt < maxCount) {
-				redisService.incr(accessKeyPrefix, key);
-			} else {
-				log.error("【访问控制】用户:{}, 访问 {}.{}过于频繁", user.getId(), className, methodName);
-				WebUtil.render(response, ResultEnum.ACCESS_LIMIT_REACHED);
-				return false;
+			if (seconds != -1 && maxCount != -1) {
+				AccessKey accessKeyPrefix = AccessKey.createByExpire(seconds);
+				String key = BasePrefix.getKey(request.getRequestURI(), user.getId());
+				Integer curAccessCnt = redisService.get(accessKeyPrefix, key, Integer.class);
+				if (curAccessCnt == null) {
+					redisService.set(accessKeyPrefix, key, 1);
+				} else if (curAccessCnt < maxCount) {
+					redisService.incr(accessKeyPrefix, key);
+				} else {
+					log.error("【访问控制】用户:{}, 访问 {}.{}过于频繁", user.getId(), className, methodName);
+					WebUtil.render(response, ResultEnum.ACCESS_LIMIT_REACHED);
+					return false;
+				}
 			}
 		}
 		return true;

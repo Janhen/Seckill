@@ -151,5 +151,11 @@
 				<deploy.type>prod</deploy.type>
 			</properties>
 		</profile>
+		<profile>
+			<id>prod.local</id>
+			<properties>
+				<deploy.type>prod.local</deploy.type>
+			</properties>
+		</profile>
 	</profiles>
 </project>

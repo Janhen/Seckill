@@ -28,9 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 @RequestMapping("/seckill/")
@@ -55,7 +55,8 @@ public class SeckillController implements InitializingBean {
 	@Autowired
     MQSender sender;
 
-	private Map<Long, Boolean> localOverMap = new ConcurrentHashMap<>();
+	// modify concurrentHashMap to hashMap AND not have put operation AND value only modify one time AND init is single thread execute
+	private Map<Long, Boolean> localOverMap = new HashMap<>();
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -90,28 +91,22 @@ public class SeckillController implements InitializingBean {
 	public ResultVO<String> getSeckillPath(HttpServletRequest request, SeckillUser user,
                                            @RequestParam("goodsId") Long goodsId,
                                            @RequestParam("verifyCode") Integer verfiyCode) {
-		// 1.redis implement traffic restrictions
-
-		// 2.check the verify code
 		boolean isValid = iSeckillService.checkVerifyCode(user, goodsId, verfiyCode);
 		if (!isValid) {
 			log.error("【获取秒杀路径】验证码不正确");
 			return ResultVO.error(ResultEnum.REQUEST_ILLEGAL);
 		}
-		// 3.return correct seckill url
 		String seckillPath = iSeckillService.generateSeckillPath(user, goodsId);
 		return ResultVO.success(seckillPath);
 	}
 	
 	@RequestMapping(value={"{path}/do_seckill"}, method={RequestMethod.POST})
 	@ResponseBody
-	public ResultVO<Integer> seckill0(Model model, SeckillUser user,
+	@AccessLimit
+	public ResultVO<Integer> seckill(Model model, SeckillUser user,
 									  @PathVariable("path") String path, @RequestParam("goodsId") Long goodsId) {
 		model.addAttribute("user", user);
-		if (user == null) {
-			return ResultVO.error(ResultEnum.SESSION_ERROR);
-		}
-		
+
 		// 1.check seckill path from redis cache
 		boolean isCorrect = iSeckillService.checkPath(user, goodsId, path);
 		if (!isCorrect) {
@@ -119,14 +114,14 @@ public class SeckillController implements InitializingBean {
 			return ResultVO.error(ResultEnum.REQUEST_ILLEGAL);
 		}
 
-		// 2.judge stock whether or not empty
+		// 2.judge memory tag that stock whether or not empty
 		boolean isOver = localOverMap.get(goodsId);
 		if (isOver) {
 			log.error("【秒杀】秒杀结束");
 			return ResultVO.error(ResultEnum.SECKILL_OVER);
 		}
 		
-		// 3.decrease stock from redis cache AND have additional function that judge seckill goods is over
+		// 3.decrease stock from redis cache AND have additional function that judge seckill goods is over AND not consistent with DB stock
 		Long stock = redisService.decr(GoodsKey.getSeckillGoodsStockByGid, BasePrefix.getKey(goodsId));
 		if (stock < 0) {
 			localOverMap.put(goodsId, true);
@@ -134,7 +129,7 @@ public class SeckillController implements InitializingBean {
 			return ResultVO.error(ResultEnum.SECKILL_OVER);
 		}
 		
-		// 4. Business strategy: check user already have seckill !!! can extension
+		// 4. Business strategy: check user already seckill from cache OR DB
 		SeckillOrder order = iOrderService.selectSeckillOrderByUserIdAndGoodsId(user.getId(), goodsId);
 		if (order != null) {
 			log.error("【秒杀】秒杀重复,userId:{},goodsId{}", user.getId(), goodsId);

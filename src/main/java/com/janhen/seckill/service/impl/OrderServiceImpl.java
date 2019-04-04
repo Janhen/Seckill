@@ -1,6 +1,5 @@
 package com.janhen.seckill.service.impl;
 
-
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.exeception.SeckillException;
 import com.janhen.seckill.common.redis.RedisService;
@@ -52,16 +51,14 @@ public class OrderServiceImpl implements IOrderService {
 		orderInfo.setStatus(1);
 		// SelectKey 返回注入到 orderInfo 的 id 中.
 		orderMapper.insertOrderInfo(orderInfo);
-		
+
 		SeckillOrder seckillOrder = new SeckillOrder();
 		seckillOrder.setGoodsId(goods.getId());
-		seckillOrder.setOrderId(orderInfo.getId());      // have orderId
+		seckillOrder.setOrderId(orderInfo.getId());      // have orderId, use mybatis to injected
 		seckillOrder.setUserId(user.getId());
-
 		// control to prevent oversold
 		orderMapper.insertSeckillOrder(seckillOrder);
-
-		// put into redis
+		// put into redis to prevent one time read from DB in seckill AND query
 		redisService.set(OrderKey.getSeckillOrderByUidGid, BasePrefix.getKey(user.getId(), goods.getId()), seckillOrder);
 		return orderInfo;
 	}
