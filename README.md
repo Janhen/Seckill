@@ -87,7 +87,7 @@ SeckillKey:seckillPath:18852860000:2			dsjfldsjklfsjdlfjs
 AccessKey:access:/seckill/path:18852860007          1
 ```
 
-![1553090459239](../../Java%E7%A7%92%E6%9D%80/mymiaosha/assets/1553090459239.png)
+![1553090459239](assets/1553090459239.png) 
 
 
 
