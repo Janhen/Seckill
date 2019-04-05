@@ -13,5 +13,13 @@ public interface ISeckillUserService {
 
     boolean login(HttpServletResponse response, LoginForm loginForm);
 
+    /**
+     * user for generating user token
+     * @param response
+     * @param loginForm
+     * @return
+     */
+    String login2(HttpServletResponse response, LoginForm loginForm);
+
     boolean updatePassword(String token, long id, String formPass);
 }

@@ -14,6 +14,8 @@ public class CookieUtil {
 
     public static final String COOKIE_TOKEN_NAME = "token";
 
+    public static final int LOGIN_TOKEN_EXPIRE_TIME = 30 * Const.MINUTE;
+
     // login
 
     public static String readLoginToken(HttpServletRequest request) {
@@ -33,8 +35,8 @@ public class CookieUtil {
         // ck.setDomain(COOKIE_DOMAIN);
         ck.setPath("/");
         ck.setHttpOnly(true);
-        ck.setMaxAge(30 * Const.MINUTE);
-        log.info("set cookie, name:{}, value:{}", ck.getName(), ck.getValue());
+        ck.setMaxAge(LOGIN_TOKEN_EXPIRE_TIME);
+//        log.info("set cookie, name:{}, value:{}", ck.getName(), ck.getValue());
         response.addCookie(ck);
     }
 

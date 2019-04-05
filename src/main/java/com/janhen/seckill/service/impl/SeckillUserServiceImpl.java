@@ -82,6 +82,32 @@ public class SeckillUserServiceImpl implements ISeckillUserService {
         return true;
     }
 
+    public String login2(HttpServletResponse response, LoginForm loginForm) {
+        // loginForm must valid by JSR303 ensure
+//        if (loginForm == null) {
+//            log.error("【登录】参数错误");
+//            throw new SeckillException(ResultEnum.SERVER_ERROR);
+//        }
+        String mobile = loginForm.getMobile();
+        SeckillUser user = getById(Long.parseLong(mobile));
+        if (user == null) {
+            throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
+        }
+
+        String password = loginForm.getPassword();    // fe form password
+        String validPassword = user.getPassword();
+        String salt = user.getSalt();
+        String encryptedPass = MD5Util.formPassToDBPass(password, salt);
+        if (!validPassword.equals(encryptedPass)) {
+            throw new SeckillException(ResultEnum.PASSWORD_ERROR);
+        }
+
+        String token = KeyUtil.geneToken();
+        redisService.set(SeckillUserKey.token, token, user);
+        CookieUtil.writeLoginToken(response, token);
+        return token;
+    }
+
     public boolean updatePassword(String token, long id, String formPass) {
         SeckillUser user = getById(id);
         if (user == null) {

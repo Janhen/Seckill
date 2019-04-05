@@ -37,6 +37,12 @@ public class OrderServiceImpl implements IOrderService {
 		return seckillOrder;
 	}
 
+	/**
+	 * unique_index(user_id, goods_id)
+	 * @param user
+	 * @param goods
+	 * @return
+	 */
 	@Transactional
 	public OrderInfo createOrder(SeckillUser user, SeckillGoodsVO goods) {
 		OrderInfo orderInfo = new OrderInfo();

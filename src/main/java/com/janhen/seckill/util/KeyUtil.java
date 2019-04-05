@@ -41,4 +41,11 @@ public class KeyUtil {
     public static String geneToken() {
         return uuid();
     }
+
+    static long i = 0;
+    static long begin = 13000000000L;
+
+    public static Long geneUserId() {
+        return Long.parseLong("" + begin + (long) (100000 + Math.random() * 900000) + (i ++));
+    }
 }

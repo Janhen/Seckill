@@ -42,3 +42,5 @@ gen
 /src/main/java/com/janhen/seckill/util/TestUtil.java
 /src/main/resources.prod.local/application.properties
 /src/main/resources.dev/application.properties
+!/src/main/java/com/janhen/seckill/util/test/DBUtil.java
+!/src/main/java/com/janhen/seckill/util/test/TestUtil.java

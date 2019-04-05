@@ -37,12 +37,13 @@ public class MQReceiver {
 		SeckillUser user = seckillMessage.getUser();
 		long goodsId = seckillMessage.getGoodsId();
 
+		// judge stock from DB specific
 		SeckillGoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		Integer stock = goods.getStockCount();
-		if (stock == null || stock <= 0) {          // check is or not have stock
+		if (stock == null || stock <= 0) {
 			return;
 		}
-		if (user == null || goods == null) {          // check message from queue
+		if (user == null || goods == null) {
 			log.error("【消息队列】传入参数有误 {}, {}", user, goodsId);
 			return ;
 		}

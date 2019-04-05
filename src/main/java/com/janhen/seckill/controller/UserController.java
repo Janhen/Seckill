@@ -40,6 +40,13 @@ public class UserController {
 		return ResultVO.success(b);
 	}
 
+	@RequestMapping(value = "/user/do_login2")
+	@ResponseBody
+	public ResultVO<String> doLogin2(HttpServletResponse response, String mobile, String password) {  // , BindingResult bindingResult
+		String token = userService.login2(response, new LoginForm(mobile, password));
+		return ResultVO.success(token);
+	}
+
 	@RequestMapping("/user/info")
 	@ResponseBody
 	public ResultVO<SeckillUser> info(Model model, SeckillUser user) {
