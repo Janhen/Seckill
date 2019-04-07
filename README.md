@@ -1,5 +1,3 @@
-[TOC]
-
 
 
 ## 项目架构
@@ -290,7 +288,7 @@ class AccessKey extends BasePrefix{
 
 **3、HashMap 作为内存标记**
 
-安全性说明：
+安全性：
 
 初始时，是通过预加载库存信息并进行对应的设置，单线程保证了安全性；
 
@@ -298,9 +296,9 @@ class AccessKey extends BasePrefix{
 
 对 VALUE 的更新仅为一次，不可回退；
 
+使用：
 
-
-相较于并发下使用 ConcurrentHashMap 效率更高；
+此场景下比使用 ConcurrentHashMap 效率更高；
 
 初始设置容量为商品总数避免不必要的扩容开销；
 
