@@ -1,4 +1,4 @@
-package com.janhen.seckill.controller.interceptor;
+package com.janhen.seckill.controller.common.interceptor;
 
 import com.janhen.seckill.common.Const;
 import com.janhen.seckill.pojo.SeckillUser;

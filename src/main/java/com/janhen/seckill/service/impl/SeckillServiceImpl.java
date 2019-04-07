@@ -42,9 +42,9 @@ public class SeckillServiceImpl implements ISeckillService {
 	 */
 	@Transactional
 	public OrderInfo seckill(SeckillUser user, SeckillGoodsVO goods) {
+		// NOTE:must first reduce stock success then can create order
 		boolean isSuccess = iGoodsService.descStock(goods);
 		if (isSuccess) {
-			// create orderinfo by user, goodsVo; may error for unique index
 			OrderInfo orderInfo = iOrderService.createOrder(user, goods);
 			return orderInfo;
 		} else {

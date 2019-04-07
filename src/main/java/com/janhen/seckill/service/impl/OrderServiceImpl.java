@@ -60,7 +60,8 @@ public class OrderServiceImpl implements IOrderService {
 
 		SeckillOrder seckillOrder = new SeckillOrder();
 		seckillOrder.setGoodsId(goods.getId());
-		seckillOrder.setOrderId(orderInfo.getId());      // have orderId, use mybatis to injected
+		// have orderId, use mybatis to injected
+		seckillOrder.setOrderId(orderInfo.getId());
 		seckillOrder.setUserId(user.getId());
 		// control to prevent oversold
 		orderMapper.insertSeckillOrder(seckillOrder);

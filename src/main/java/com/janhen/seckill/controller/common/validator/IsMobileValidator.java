@@ -1,4 +1,4 @@
-package com.janhen.seckill.controller.validator;
+package com.janhen.seckill.controller.common.validator;
 
 import com.janhen.seckill.util.ValidatorUtil;
 import org.springframework.util.StringUtils;

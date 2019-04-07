@@ -7,7 +7,7 @@ import com.janhen.seckill.common.rabbitmq.SeckillMessage;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.BasePrefix;
 import com.janhen.seckill.common.redis.key.GoodsKey;
-import com.janhen.seckill.controller.interceptor.AccessLimit;
+import com.janhen.seckill.controller.common.interceptor.AccessLimit;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.IGoodsService;
@@ -56,12 +56,13 @@ public class SeckillController implements InitializingBean {
     MQSender sender;
 
 	// modify concurrentHashMap to hashMap AND not have put operation AND value only modify one time AND init is single thread execute
-	private Map<Long, Boolean> localOverMap = new HashMap<>();
+	private Map<Long, Boolean> localOverMap;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		// preload cache and init map
 		List<SeckillGoodsVO> goodsList = iGoodsService.selectSeckillGoodsVoList();          // only store seckill good
+		localOverMap =  new HashMap<>(goodsList.size() * 4 / 3);
 		if (goodsList != null) {
 			for (SeckillGoodsVO goods : goodsList) {
 				redisService.set(GoodsKey.getSeckillGoodsStockByGid, BasePrefix.getKey(goods.getId()), goods.getStockCount());

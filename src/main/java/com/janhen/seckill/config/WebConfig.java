@@ -1,7 +1,8 @@
 package com.janhen.seckill.config;
 
-import com.janhen.seckill.controller.interceptor.AccessInterceptor;
-import com.janhen.seckill.controller.interceptor.SessionInterceptor;
+import com.janhen.seckill.controller.common.UserArgumentResolver;
+import com.janhen.seckill.controller.common.interceptor.AccessInterceptor;
+import com.janhen.seckill.controller.common.interceptor.SessionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

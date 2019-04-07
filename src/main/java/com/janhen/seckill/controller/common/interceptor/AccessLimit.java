@@ -1,4 +1,4 @@
-package com.janhen.seckill.controller.interceptor;
+package com.janhen.seckill.controller.common.interceptor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

@@ -1,4 +1,4 @@
-package com.janhen.seckill.controller.validator;
+package com.janhen.seckill.controller.common.validator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

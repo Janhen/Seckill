@@ -1,6 +1,6 @@
-package com.janhen.seckill.config;
+package com.janhen.seckill.controller.common;
 
-import com.janhen.seckill.controller.interceptor.UserContext;
+import com.janhen.seckill.controller.common.interceptor.UserContext;
 import com.janhen.seckill.pojo.SeckillUser;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;

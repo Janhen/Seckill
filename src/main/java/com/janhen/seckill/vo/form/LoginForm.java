@@ -1,6 +1,6 @@
 package com.janhen.seckill.vo.form;
 
-import com.janhen.seckill.controller.validator.IsMobile;
+import com.janhen.seckill.controller.common.validator.IsMobile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
