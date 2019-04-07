@@ -5,25 +5,7 @@
 ![1554631137696](assets/1554631137696.png)
 
 
-
-## 在线演示
-
-[Seckill](http://seckill.janh80.com)
-
-```html
-账号: 18852860001~18852860012
-密码: 123456
-```
-
-说明:   
-对任意秒杀商品，接口请求限制为 10s 2次;      
-
-单用户只能对秒杀商品秒杀一次；  
-
-
-
 ## 对应说明
-
 
 
 技术：SpringBoot, Mybatis, Redis, RabbitMQ, Thymeleaf 
