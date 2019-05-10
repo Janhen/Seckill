@@ -3,12 +3,14 @@ package com.janhen.seckill.vo.form;
 import com.janhen.seckill.controller.common.validator.IsMobile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class LoginForm {
 	
 //	@Pattern(regexp="1\\d{10}")

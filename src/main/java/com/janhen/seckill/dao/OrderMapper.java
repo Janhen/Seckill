@@ -7,6 +7,9 @@ import org.apache.ibatis.annotations.*;
 @Mapper
 public interface OrderMapper {
 
+	String TABLE_ORDER_INFO = " order_info ";
+	String TABLE_SECKILL_ORDER = " seckill_order ";
+
 	@Insert("INSERT INTO order_info "
 			+ "VALUES (null, #{userId}, #{goodsId}, null, #{goodsName}, #{goodsCount}, #{goodsPrice}, #{orderChannel}, #{status}, #{createDate}, null)")
 	@SelectKey(keyColumn = "id", keyProperty = "id", resultType = long.class, before = false, statement = "select last_insert_id()")
