@@ -22,6 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+		<docker.registry></docker.registry>
 	</properties>
 
 	<dependencies>
@@ -127,15 +128,6 @@
 
 	<profiles>
 		<profile>
-			<id>dev</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<deploy.type>dev</deploy.type>
-			</properties>
-		</profile>
-		<profile>
 			<id>prod</id>
 			<properties>
 				<deploy.type>prod</deploy.type>
@@ -146,6 +138,69 @@
 			<properties>
 				<deploy.type>prod.local</deploy.type>
 			</properties>
+		</profile>
+		<profile>
+			<id>docker</id>
+			<activation>
+				<property>
+					<name>docker</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.spotify</groupId>
+						<artifactId>docker-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>build-image</id>
+								<phase>package</phase>
+								<goals>
+									<goal>build</goal>
+								</goals>
+								<configuration>
+									<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+									<imageName>${docker.registry}/iwms/${project.artifactId}
+									</imageName> <!-- 镜像名 -->
+									<imageTags>
+										<imageTag>${project.version}</imageTag> <!-- 镜像tag，支持多个tag -->
+									</imageTags>
+									<forceTags>true</forceTags>
+									<labels>
+										<label>VERSION=${project.version}</label>
+									</labels>
+									<resources>
+										<resource>
+											<targetPath>/</targetPath>
+											<directory>${project.build.directory}</directory>
+											<include>${project.build.finalName}.jar
+											</include> <!-- 将制品添加到docker build context -->
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+							<execution>
+								<id>push-image</id>
+								<phase>deploy</phase>
+								<goals>
+									<goal>push</goal>
+								</goals>
+								<configuration>
+									<serverId>heading-harbor-dockerhub
+									</serverId> <!-- 对应maven settings.xml的server id -->
+									<imageName>
+										${heading.kadocker.registry}/iwms/${project.artifactId}:${project.version} <!--
+											需要push到仓库的镜像，目前只支持一个 -->
+									</imageName>
+									<registryUrl>http://${docker.registry}</registryUrl>
+									<retryPushCount>3</retryPushCount>
+									<retryPushTimeout>60</retryPushTimeout>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
