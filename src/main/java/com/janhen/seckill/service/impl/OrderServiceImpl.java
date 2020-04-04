@@ -19,63 +19,66 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 
 @Service
-@Transactional(readOnly=true)
+@Transactional(readOnly = true)
 @Slf4j
 public class OrderServiceImpl implements IOrderService {
-	
-	@Autowired
-	OrderMapper orderMapper;
 
-	@Autowired
-	RedisService redisService;
+  @Autowired
+  OrderMapper orderMapper;
 
-	public SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId) {
-		SeckillOrder seckillOrder = redisService.get(OrderKey.getSeckillOrderByUidGid, BasePrefix.getKey(userId, goodsId), SeckillOrder.class);
-		if (seckillOrder == null) {
-			seckillOrder = orderMapper.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
-		}
-		return seckillOrder;
-	}
+  @Autowired
+  RedisService redisService;
 
-	/**
-	 * unique_index(user_id, goods_id)
-	 * @param user
-	 * @param goods
-	 * @return
-	 */
-	@Transactional
-	public OrderInfo createOrder(SeckillUser user, SeckillGoodsVO goods) {
-		OrderInfo orderInfo = new OrderInfo();
-		orderInfo.setUserId(user.getId());
-		orderInfo.setGoodsId(goods.getId());
-		orderInfo.setCreateDate(new Date());
-		orderInfo.setDeliveryAddrId(1L);
-		orderInfo.setGoodsCount(goods.getStockCount());
-		orderInfo.setGoodsName(goods.getGoodsName());
-		orderInfo.setGoodsPrice(goods.getSeckillPrice());
-		orderInfo.setOrderChannel(0);
-		orderInfo.setStatus(1);
-		// SelectKey 返回注入到 orderInfo 的 id 中.
-		orderMapper.insertOrderInfo(orderInfo);
+  @Override
+  public SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId) {
+    SeckillOrder seckillOrder = redisService.get(OrderKey.getSeckillOrderByUidGid, BasePrefix.getKey(userId, goodsId), SeckillOrder.class);
+    if (seckillOrder == null) {
+      seckillOrder = orderMapper.selectSeckillOrderByUserIdAndGoodsId(userId, goodsId);
+    }
+    return seckillOrder;
+  }
 
-		SeckillOrder seckillOrder = new SeckillOrder();
-		seckillOrder.setGoodsId(goods.getId());
-		// have orderId, use mybatis to injected
-		seckillOrder.setOrderId(orderInfo.getId());
-		seckillOrder.setUserId(user.getId());
-		// control to prevent oversold
-		orderMapper.insertSeckillOrder(seckillOrder);
-		// put into redis to prevent one time read from DB in seckill AND query
-		redisService.set(OrderKey.getSeckillOrderByUidGid, BasePrefix.getKey(user.getId(), goods.getId()), seckillOrder);
-		return orderInfo;
-	}
+  /**
+   * unique_index(user_id, goods_id)
+   *
+   * @param user
+   * @param goods
+   * @return
+   */
+  @Transactional
+  public OrderInfo createOrder(SeckillUser user, SeckillGoodsVO goods) {
+    OrderInfo orderInfo = new OrderInfo();
+    orderInfo.setUserId(user.getId());
+    orderInfo.setGoodsId(goods.getId());
+    orderInfo.setCreateDate(new Date());
+    orderInfo.setDeliveryAddrId(1L);
+    orderInfo.setGoodsCount(goods.getStockCount());
+    orderInfo.setGoodsName(goods.getGoodsName());
+    orderInfo.setGoodsPrice(goods.getSeckillPrice());
+    orderInfo.setOrderChannel(0);
+    orderInfo.setStatus(1);
+    // SelectKey 返回注入到 orderInfo 的 id 中.
+    orderMapper.insertOrderInfo(orderInfo);
 
-	public OrderInfo selectOrderInfoById(Long orderId) {
-		OrderInfo orderInfo = orderMapper.selectOrderInfoById(orderId);
-		if (orderInfo == null) {
-			log.error("【查询订单】订单不存在, orderId:{}", orderId);
-			throw new SeckillException(ResultEnum.ORDER_NOT_EXIST);
-		}
-		return orderInfo;
-	}
+    SeckillOrder seckillOrder = new SeckillOrder();
+    seckillOrder.setGoodsId(goods.getId());
+    // have orderId, use mybatis to injected
+    seckillOrder.setOrderId(orderInfo.getId());
+    seckillOrder.setUserId(user.getId());
+    // control to prevent oversold
+    orderMapper.insertSeckillOrder(seckillOrder);
+    // put into redis to prevent one time read from DB in seckill AND query
+    redisService.set(OrderKey.getSeckillOrderByUidGid, BasePrefix.getKey(user.getId(), goods.getId()), seckillOrder);
+    return orderInfo;
+  }
+
+  @Override
+  public OrderInfo selectOrderInfoById(Long orderId) {
+    OrderInfo orderInfo = orderMapper.selectOrderInfoById(orderId);
+    if (orderInfo == null) {
+      log.error("【查询订单】订单不存在, orderId:{}", orderId);
+      throw new SeckillException(ResultEnum.ORDER_NOT_EXIST);
+    }
+    return orderInfo;
+  }
 }

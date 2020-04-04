@@ -2,7 +2,7 @@ package com.janhen.seckill.controller;
 
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
-import com.janhen.seckill.common.rabbitmq.MQSender;
+import com.janhen.seckill.common.rabbitmq.MqSender;
 import com.janhen.seckill.common.rabbitmq.SeckillMessage;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.BasePrefix;
@@ -53,7 +53,7 @@ public class SeckillController implements InitializingBean {
 	RedisService redisService;
 
 	@Autowired
-    MQSender sender;
+  MqSender sender;
 
 	// modify concurrentHashMap to hashMap AND not have put operation AND value only modify one time AND init is single thread execute
 	private Map<Long, Boolean> localOverMap;

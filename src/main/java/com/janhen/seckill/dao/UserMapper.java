@@ -8,12 +8,11 @@ import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UserMapper {
+  String TABLE_NAME = " user ";
 
-	String TABLE_NAME = " user ";
+  @Select({"SELECT * FROM ", TABLE_NAME, " WHERE id = #{id}"})
+  User getById(@Param("id") int id);
 
-	@Select({"SELECT * FROM ",TABLE_NAME," WHERE id = #{id}"})
-	User getById(@Param("id") int id);
-	
-	@Insert({"INSERT INTO ",TABLE_NAME," (id, name) VALUES(#{id}, #{name})"})
-	int insert(User user);
+  @Insert({"INSERT INTO ", TABLE_NAME, " (id, name) VALUES(#{id}, #{name})"})
+  int insert(User user);
 }

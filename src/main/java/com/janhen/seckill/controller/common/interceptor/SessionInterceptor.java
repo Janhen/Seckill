@@ -13,34 +13,37 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * 拦截请求，将用户session放入ThreadLocal中
+ */
 @Component
 @Slf4j
 public class SessionInterceptor extends HandlerInterceptorAdapter {
 
-    @Autowired
-    SeckillUserServiceImpl userService;
+  @Autowired
+  private SeckillUserServiceImpl userService;
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-            throws Exception {
-        SeckillUser user = getUserByToken(request, response);
-        UserContext.setUser(user);
-        return true;
-    }
+  @Override
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+          throws Exception {
+    SeckillUser user = getUserByToken(request, response);
+    UserContext.setUser(user);
+    return true;
+  }
 
-    private SeckillUser getUserByToken(HttpServletRequest request, HttpServletResponse response) {
-        // take from cookie OR URL rewrite
-        String paramToken = request.getParameter(Const.COOKIE_NAME_TOKEN);
-        String cookieToken = CookieUtil.readLoginToken(request);
-        if (StringUtils.isEmpty(paramToken) && StringUtils.isEmpty(cookieToken)) {
-            return null;
-        }
-        String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-        return userService.getByToken(response, token);
+  private SeckillUser getUserByToken(HttpServletRequest request, HttpServletResponse response) {
+    // take from cookie OR URL rewrite
+    String paramToken = request.getParameter(Const.COOKIE_NAME_TOKEN);
+    String cookieToken = CookieUtil.readLoginToken(request);
+    if (StringUtils.isEmpty(paramToken) && StringUtils.isEmpty(cookieToken)) {
+      return null;
     }
+    String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
+    return userService.getByToken(response, token);
+  }
 
-    @Override
-    public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
-        UserContext.deleteUser();
-    }
+  @Override
+  public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
+    UserContext.deleteUser();
+  }
 }

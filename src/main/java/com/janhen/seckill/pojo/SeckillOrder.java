@@ -1,11 +1,13 @@
 package com.janhen.seckill.pojo;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-	public class SeckillOrder {
-	private Long id;
-	private Long userId;
-	private Long orderId;
-	private Long goodsId;
+@Getter
+@Setter
+public class SeckillOrder {
+  private Long id;
+  private Long userId;
+  private Long orderId;
+  private Long goodsId;
 }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class MQSender {
+public class MqSender {
 
 	@Autowired
 	AmqpTemplate amqpTemplate;

@@ -23,107 +23,106 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class SeckillUserServiceImpl implements ISeckillUserService {
 
-    @Autowired
-    SeckillUserMapper seckillUserMapper;
+  @Autowired
+  private SeckillUserMapper seckillUserMapper;
 
-    @Autowired
-    RedisService redisService;
+  @Autowired
+  private RedisService redisService;
 
-    public SeckillUser getById(long id) {
-        // 1.take from cache
-        SeckillUser seckillUser = redisService.get(SeckillUserKey.getById, "" + id, SeckillUser.class);
-        if (seckillUser != null) {
-            return seckillUser;
-        }
-        // 2.take from db and put cache
-        seckillUser = seckillUserMapper.getById(id);
-        if (seckillUser != null) {
-            redisService.set(SeckillUserKey.getById, "" + id, seckillUser);
-        }
-        return seckillUser;
+  public SeckillUser getById(long id) {
+    SeckillUser seckillUser = redisService.get(SeckillUserKey.getById, "" + id, SeckillUser.class);
+    if (seckillUser != null) {
+      return seckillUser;
     }
-
-    public SeckillUser getByToken(HttpServletResponse response, String token) {
-        if (StringUtils.isEmpty(token)) {
-            return null;
-        }
-        // take from cache AND reset expire time(cache, cookie)
-        SeckillUser user = redisService.get(SeckillUserKey.token, token, SeckillUser.class);
-        if (user != null) {
-            redisService.set(SeckillUserKey.token, token, user);    // reset session expire time
-            CookieUtil.writeLoginToken(response, token);             // reset cookie expire time
-        }
-        return user;
+    seckillUser = seckillUserMapper.getById(id);
+    if (seckillUser != null) {
+      redisService.set(SeckillUserKey.getById, "" + id, seckillUser);
     }
+    return seckillUser;
+  }
 
-    public boolean login(HttpServletResponse response, LoginForm loginForm) {
-        // loginForm must valid by JSR303 ensure
+  public SeckillUser getByToken(HttpServletResponse response, String token) {
+    if (StringUtils.isEmpty(token)) {
+      return null;
+    }
+    // take from cache AND reset expire time(cache, cookie)
+    SeckillUser user = redisService.get(SeckillUserKey.token, token, SeckillUser.class);
+    if (user != null) {
+      redisService.set(SeckillUserKey.token, token, user);    // reset session expire time
+      CookieUtil.writeLoginToken(response, token);             // reset cookie expire time
+    }
+    return user;
+  }
+
+  public boolean login(HttpServletResponse response, LoginForm loginForm) {
+    // loginForm must valid by JSR303 ensure
 //        if (loginForm == null) {
 //            log.error("【登录】参数错误");
 //            throw new SeckillException(ResultEnum.SERVER_ERROR);
 //        }
-        String mobile = loginForm.getMobile();
-        SeckillUser user = getById(Long.parseLong(mobile));
-        if (user == null) {
-            throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
-        }
-
-        String password = loginForm.getPassword();    // fe form password
-        String validPassword = user.getPassword();
-        String salt = user.getSalt();
-        String encryptedPass = MD5Util.formPassToDBPass(password, salt);
-        if (!validPassword.equals(encryptedPass)) {
-            throw new SeckillException(ResultEnum.PASSWORD_ERROR);
-        }
-
-        String token = KeyUtil.geneToken();
-        redisService.set(SeckillUserKey.token, token, user);
-        CookieUtil.writeLoginToken(response, token);
-        return true;
+    String mobile = loginForm.getMobile();
+    SeckillUser user = getById(Long.parseLong(mobile));
+    if (user == null) {
+      throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
     }
 
-    public String login2(HttpServletResponse response, LoginForm loginForm) {
-        // loginForm must valid by JSR303 ensure
+    String password = loginForm.getPassword();    // fe form password
+    String validPassword = user.getPassword();
+    String salt = user.getSalt();
+    String encryptedPass = MD5Util.formPassToDBPass(password, salt);
+    if (!validPassword.equals(encryptedPass)) {
+      throw new SeckillException(ResultEnum.PASSWORD_ERROR);
+    }
+
+    String token = KeyUtil.geneToken();
+    redisService.set(SeckillUserKey.token, token, user);
+    CookieUtil.writeLoginToken(response, token);
+    return true;
+  }
+
+  public String login2(HttpServletResponse response, LoginForm loginForm) {
+    // loginForm must valid by JSR303 ensure
 //        if (loginForm == null) {
 //            log.error("【登录】参数错误");
 //            throw new SeckillException(ResultEnum.SERVER_ERROR);
 //        }
-        String mobile = loginForm.getMobile();
-        SeckillUser user = getById(Long.parseLong(mobile));
-        if (user == null) {
-            throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
-        }
-
-        String password = loginForm.getPassword();    // fe form password
-        String validPassword = user.getPassword();
-        String salt = user.getSalt();
-        String encryptedPass = MD5Util.formPassToDBPass(password, salt);
-        if (!validPassword.equals(encryptedPass)) {
-            throw new SeckillException(ResultEnum.PASSWORD_ERROR);
-        }
-
-        String token = KeyUtil.geneToken();
-        redisService.set(SeckillUserKey.token, token, user);
-        CookieUtil.writeLoginToken(response, token);
-        return token;
+    String mobile = loginForm.getMobile();
+    SeckillUser user = getById(Long.parseLong(mobile));
+    if (user == null) {
+      throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
     }
 
-    public boolean updatePassword(String token, long id, String formPass) {
-        SeckillUser user = getById(id);
-        if (user == null) {
-            throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
-        }
-
-        // update db
-        String dbPass = MD5Util.formPassToDBPass(formPass, user.getSalt());
-        seckillUserMapper.updatePasswordById(dbPass, id);
-
-        // make cache invalid
-        redisService.del(SeckillUserKey.getById, BasePrefix.getKey(id));
-        user.setPassword(dbPass);
-        redisService.set(SeckillUserKey.token, token, user);
-        return true;
+    String password = loginForm.getPassword();    // fe form password
+    String validPassword = user.getPassword();
+    String salt = user.getSalt();
+    String encryptedPass = MD5Util.formPassToDBPass(password, salt);
+    if (!validPassword.equals(encryptedPass)) {
+      throw new SeckillException(ResultEnum.PASSWORD_ERROR);
     }
+
+    String token = KeyUtil.geneToken();
+    redisService.set(SeckillUserKey.token, token, user);
+    CookieUtil.writeLoginToken(response, token);
+    return token;
+  }
+
+  @Override
+  public boolean updatePassword(String token, long id, String formPass) {
+    SeckillUser user = getById(id);
+    if (user == null) {
+      throw new SeckillException(ResultEnum.MOBILE_NOT_EXIST);
+    }
+
+    // update db
+    String dbPass = MD5Util.formPassToDBPass(formPass, user.getSalt());
+    seckillUserMapper.updatePasswordById(dbPass, id);
+
+    // make cache invalid
+    redisService.del(SeckillUserKey.getById, BasePrefix.getKey(id));
+    user.setPassword(dbPass);
+    redisService.set(SeckillUserKey.token, token, user);
+    return true;
+  }
 }
 
 

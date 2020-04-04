@@ -14,29 +14,32 @@ import java.util.List;
 @Service
 @Slf4j
 public class GoodsServiceImpl implements IGoodsService {
-	 
-	@Autowired
-	GoodsMapper goodsMapper;
 
-	public SeckillGoodsVO selectGoodsVoByGoodsId(Long goodsId) {
-		if (goodsId == null) {
-			throw new IllegalArgumentException();
-		}
-		SeckillGoodsVO seckillGoodsVO = goodsMapper.selectGoodsVoByGoodsId(goodsId);
-		if (seckillGoodsVO == null) {
-			log.error("【商品查询】无此商品 goodsId: {}", goodsId);
-			throw new GoodsException(ResultEnum.GOODS_NOT_EXIST);
-		}
-		return seckillGoodsVO;
-	}
+  @Autowired
+  private GoodsMapper goodsMapper;
 
-	public List<SeckillGoodsVO> selectSeckillGoodsVoList() {
-		List<SeckillGoodsVO> goodsList = goodsMapper.selectSeckillGoodsVoList();
-		return goodsList;
-	}
+  @Override
+  public SeckillGoodsVO selectGoodsVoByGoodsId(Long goodsId) {
+    if (goodsId == null) {
+      throw new IllegalArgumentException();
+    }
+    SeckillGoodsVO seckillGoodsVO = goodsMapper.selectGoodsVoByGoodsId(goodsId);
+    if (seckillGoodsVO == null) {
+      log.error("【商品查询】无此商品 goodsId: {}", goodsId);
+      throw new GoodsException(ResultEnum.GOODS_NOT_EXIST);
+    }
+    return seckillGoodsVO;
+  }
 
-	public boolean descStock(SeckillGoodsVO goods) {
-		int rowCount = goodsMapper.updateSeckillStock(goods.getId());
-		return rowCount > 0 ? true : false;
-	}
+  @Override
+  public List<SeckillGoodsVO> selectSeckillGoodsVoList() {
+    List<SeckillGoodsVO> goodsList = goodsMapper.selectSeckillGoodsVoList();
+    return goodsList;
+  }
+
+  @Override
+  public boolean descStock(SeckillGoodsVO goods) {
+    int rowCount = goodsMapper.updateSeckillStock(goods.getId());
+    return rowCount > 0 ? true : false;
+  }
 }

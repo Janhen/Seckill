@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface IGoodsService {
 
-    SeckillGoodsVO selectGoodsVoByGoodsId(Long goodsId);
+  SeckillGoodsVO selectGoodsVoByGoodsId(Long goodsId);
 
-    List<SeckillGoodsVO> selectSeckillGoodsVoList();
+  List<SeckillGoodsVO> selectSeckillGoodsVoList();
 
-    boolean descStock(SeckillGoodsVO goods);
+  boolean descStock(SeckillGoodsVO goods);
 }

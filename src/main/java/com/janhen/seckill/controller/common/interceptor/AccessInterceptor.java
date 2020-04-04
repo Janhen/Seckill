@@ -16,58 +16,61 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Redis 计数器方式实现接口限流
+ */
 @Component
 @Slf4j
-public class AccessInterceptor extends HandlerInterceptorAdapter{
+public class AccessInterceptor extends HandlerInterceptorAdapter {
 
-	@Autowired
-    SeckillUserServiceImpl userService;
-	
-	@Autowired
-    RedisService redisService;
-	
-	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-			throws Exception {
+  @Autowired
+  private SeckillUserServiceImpl userService;
 
-		if (handler instanceof HandlerMethod) {
-			HandlerMethod handlerMethod = (HandlerMethod) handler;
-			String methodName = handlerMethod.getMethod().getName();
-			String className = handlerMethod.getBean().getClass().getName();
+  @Autowired
+  private RedisService redisService;
 
-			AccessLimit accessLimit = handlerMethod.getMethodAnnotation(AccessLimit.class);
-			if (accessLimit == null) {
-				return true;
-			}
+  @Override
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+          throws Exception {
+    if (handler instanceof HandlerMethod) {
+      HandlerMethod handlerMethod = (HandlerMethod) handler;
+      String methodName = handlerMethod.getMethod().getName();
+      String className = handlerMethod.getBean().getClass().getName();
 
-			// handle limit
+      AccessLimit accessLimit = handlerMethod.getMethodAnnotation(AccessLimit.class);
+      if (accessLimit == null) {
+        return true;
+      }
 
-			int seconds = accessLimit.seconds();
-			int maxCount = accessLimit.maxCount();
-			boolean needLogin = accessLimit.needLogin();
-			SeckillUser user = UserContext.getUser();
-			if (needLogin) {
-				if (user == null) {
-					log.error("【访问控制】需要登录");
-					WebUtil.render(response, ResultEnum.SESSION_ERROR);
-					return false;
-				}
-			}
-			if (seconds != -1 && maxCount != -1) {
-				AccessKey accessKeyPrefix = AccessKey.createByExpire(seconds);
-				String key = BasePrefix.getKey(request.getRequestURI(), user.getId());
-				Integer curAccessCnt = redisService.get(accessKeyPrefix, key, Integer.class);
-				if (curAccessCnt == null) {
-					redisService.set(accessKeyPrefix, key, 1);
-				} else if (curAccessCnt < maxCount) {
-					redisService.incr(accessKeyPrefix, key);
-				} else {
-					log.error("【访问控制】用户:{}, 访问 {}.{}过于频繁", user.getId(), className, methodName);
-					WebUtil.render(response, ResultEnum.ACCESS_LIMIT_REACHED);
-					return false;
-				}
-			}
-		}
-		return true;
-	}
+      // handle limit
+      boolean needLogin = accessLimit.needLogin();
+      SeckillUser user = UserContext.getUser();
+      if (needLogin) {
+        if (user == null) {
+          log.error("访问拦截");
+          WebUtil.render(response, ResultEnum.SESSION_ERROR);
+          return false;
+        }
+      }
+
+      int seconds = accessLimit.seconds();
+      int maxCount = accessLimit.maxCount();
+      if (seconds != -1 && maxCount != -1) {
+        // <request-uri>:<user-id>
+        AccessKey accessKeyPrefix = AccessKey.createByExpire(seconds);
+        String key = BasePrefix.getKey(request.getRequestURI(), user.getId());
+        Integer curAccessCnt = redisService.get(accessKeyPrefix, key, Integer.class);
+        if (curAccessCnt == null) {
+          redisService.set(accessKeyPrefix, key, 1);
+        } else if (curAccessCnt < maxCount) {
+          redisService.incr(accessKeyPrefix, key);
+        } else {
+          log.error("用户:{}, 访问 {}.{}过于频繁", user.getId(), className, methodName);
+          WebUtil.render(response, ResultEnum.ACCESS_LIMIT_REACHED);
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 }

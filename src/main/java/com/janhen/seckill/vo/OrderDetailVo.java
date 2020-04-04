@@ -4,10 +4,8 @@ import com.janhen.seckill.pojo.OrderInfo;
 import lombok.Data;
 
 @Data
-public class OrderDetailVO {
-	/** 商品本身的信息. */
-	private SeckillGoodsVO goods;
+public class OrderDetailVo {
+  private SeckillGoodsVO goods;
 
-	/** 所属订单信息. */
-	private OrderInfo order;
+  private OrderInfo order;
 }

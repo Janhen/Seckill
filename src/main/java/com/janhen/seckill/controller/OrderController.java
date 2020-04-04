@@ -7,7 +7,7 @@ import com.janhen.seckill.common.ResultVO;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.IOrderService;
 import com.janhen.seckill.vo.SeckillGoodsVO;
-import com.janhen.seckill.vo.OrderDetailVO;
+import com.janhen.seckill.vo.OrderDetailVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +26,7 @@ public class OrderController {
 	
 	@RequestMapping(value="detail")
 	@ResponseBody
-	public ResultVO<OrderDetailVO> info(SeckillUser user, @RequestParam("orderId") Long orderId) {
+	public ResultVO<OrderDetailVo> info(SeckillUser user, @RequestParam("orderId") Long orderId) {
 		if (user == null) {
 			return ResultVO.error(ResultEnum.SERVER_ERROR);
 		}
@@ -34,7 +34,7 @@ public class OrderController {
 		Long goodsId = order.getGoodsId();
 		SeckillGoodsVO seckillGoodsVO = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 
-		OrderDetailVO orderDetailVO = new OrderDetailVO();
+		OrderDetailVo orderDetailVO = new OrderDetailVo();
 		orderDetailVO.setGoods(seckillGoodsVO);
 		orderDetailVO.setOrder(order);
 		return ResultVO.success(orderDetailVO);

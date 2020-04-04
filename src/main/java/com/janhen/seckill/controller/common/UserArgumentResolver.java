@@ -10,20 +10,20 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * injected user session object in method parameter
+ * 自动注入额外的参数作为方法参数
  */
 @Component
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
-    @Override
-    public boolean supportsParameter(MethodParameter parameter) {
-        Class<?> parameterType = parameter.getParameterType();
-        return parameterType.equals(SeckillUser.class);
-    }
+  @Override
+  public boolean supportsParameter(MethodParameter parameter) {
+    Class<?> parameterType = parameter.getParameterType();
+    return parameterType.equals(SeckillUser.class);
+  }
 
-    @Override
-    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        return UserContext.getUser();
-    }
+  @Override
+  public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+    return UserContext.getUser();
+  }
 }

@@ -7,27 +7,27 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MQConfig {
 
-	public static final String QUEUE_NAME = "queue";
-	public static final String SECKILL_QUEUE = "Seckill.queue.2";
+  public static final String QUEUE_NAME = "queue";
+  public static final String SECKILL_QUEUE = "Seckill.queue.2";
 
-	public static final String SECKILL_COUNT_LIMIT_QUEUE = "Seckill.Count.Limit.Queue.1";
+  public static final String SECKILL_COUNT_LIMIT_QUEUE = "Seckill.Count.Limit.Queue.1";
 
-	public static final String TOPIC_QUEUE1 = "topic.queue1";
-	public static final String TOPIC_QUEUE2 = "topic.queue2";
-	public static final String HEADER_QUEUE = "header.queue";
-	
-	public static final String TOPIC_EXCHANGE = "topicExchange";
-	public static final String FANOUT_EXCHANGE = "fanoutExchange";
-	public static final String HEADERS_EXCHANGE = "headersExchange";
+  public static final String TOPIC_QUEUE1 = "topic.queue1";
+  public static final String TOPIC_QUEUE2 = "topic.queue2";
+  public static final String HEADER_QUEUE = "header.queue";
 
-	// direct
+  public static final String TOPIC_EXCHANGE = "topicExchange";
+  public static final String FANOUT_EXCHANGE = "fanoutExchange";
+  public static final String HEADERS_EXCHANGE = "headersExchange";
 
-	@Bean
-	public Queue queue() {
-		return new Queue(SECKILL_QUEUE, true);
-	}
+  // direct
 
-	// topic
+  @Bean
+  public Queue queue() {
+    return new Queue(SECKILL_QUEUE, true);
+  }
+
+  // topic
 
 //	@Bean
 //	public Queue topicQueue1() {

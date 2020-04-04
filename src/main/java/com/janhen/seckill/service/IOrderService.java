@@ -6,10 +6,9 @@ import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.vo.SeckillGoodsVO;
 
 public interface IOrderService {
+  SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId);
 
-    SeckillOrder selectSeckillOrderByUserIdAndGoodsId(Long userId, Long goodsId);
+  OrderInfo createOrder(SeckillUser user, SeckillGoodsVO goods);
 
-    OrderInfo createOrder(SeckillUser user, SeckillGoodsVO goods);
-
-    OrderInfo selectOrderInfoById(Long orderId);
+  OrderInfo selectOrderInfoById(Long orderId);
 }

@@ -10,18 +10,18 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * @see javax.validation.constraints.NotNull
+ * 自定义校验规则
  */
 @Documented
-@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
+@Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {IsMobileValidator.class })
+@Constraint(validatedBy = {IsMobileValidator.class})
 public @interface IsMobile {
-	boolean required() default true;
-	
-	String message() default "手机号码格式错误";
+  boolean required() default true;
 
-	Class<?>[] groups() default { };
+  String message() default "手机号码格式错误";
 
-	Class<? extends Payload>[] payload() default { };
+  Class<?>[] groups() default {};
+
+  Class<? extends Payload>[] payload() default {};
 }

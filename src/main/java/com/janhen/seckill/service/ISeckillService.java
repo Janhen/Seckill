@@ -8,15 +8,15 @@ import java.awt.image.BufferedImage;
 
 public interface ISeckillService {
 
-    OrderInfo seckill(SeckillUser user, SeckillGoodsVO goods);
+  OrderInfo seckill(SeckillUser user, SeckillGoodsVO goods);
 
-    String generateSeckillPath(SeckillUser user, Long goodsId);
+  String generateSeckillPath(SeckillUser user, Long goodsId);
 
-    BufferedImage generateVerfiyCodeImg(SeckillUser user, Long goodsId);
+  BufferedImage generateVerfiyCodeImg(SeckillUser user, Long goodsId);
 
-    boolean checkVerifyCode(SeckillUser user, Long goodsId, Integer verfiyCode);
+  boolean checkVerifyCode(SeckillUser user, Long goodsId, Integer verfiyCode);
 
-    Long getSeckillResult(Long userId, Long goodsId);
+  Long getSeckillResult(Long userId, Long goodsId);
 
-    boolean checkPath(SeckillUser user, Long goodsId, String path);
+  boolean checkPath(SeckillUser user, Long goodsId, String path);
 }

@@ -9,7 +9,7 @@ import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.IGoodsService;
 import com.janhen.seckill.service.ISeckillUserService;
-import com.janhen.seckill.vo.GoodsDetailVO;
+import com.janhen.seckill.vo.GoodsDetailVo;
 import com.janhen.seckill.vo.SeckillGoodsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +70,7 @@ public class GoodsController {
 	
 	@RequestMapping(value="detail/{goodsId}")
 	@ResponseBody
-	public ResultVO<GoodsDetailVO> detail(SeckillUser user, @PathVariable("goodsId") Long goodsId) {
+	public ResultVO<GoodsDetailVo> detail(SeckillUser user, @PathVariable("goodsId") Long goodsId) {
 		// page static, only have dynamic data
 		SeckillGoodsVO goods = iGoodsService.selectGoodsVoByGoodsId(goodsId);
 		
@@ -91,7 +91,7 @@ public class GoodsController {
 			remainSeconds = 0;
 		}
 		
-		GoodsDetailVO goodsDetailVO = new GoodsDetailVO();
+		GoodsDetailVo goodsDetailVO = new GoodsDetailVo();
 		goodsDetailVO.setGoods(goods);
 		goodsDetailVO.setUser(user);
 		goodsDetailVO.setSeckillStatus(seckillStatus);
