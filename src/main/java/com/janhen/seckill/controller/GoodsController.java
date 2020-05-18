@@ -44,7 +44,7 @@ public class GoodsController {
 	@Autowired
 	ApplicationContext applicationContext;
 	
-	@RequestMapping(value="to_list", produces="text/html;charset=utf-8")
+	@RequestMapping(value="/to_list", produces="text/html;charset=utf-8")
 	@ResponseBody
 	public String list(Model model, SeckillUser user, HttpServletRequest request, HttpServletResponse response) {
 		model.addAttribute("user", user);
@@ -68,7 +68,7 @@ public class GoodsController {
 		return html;
 	}
 	
-	@RequestMapping(value="detail/{goodsId}")
+	@RequestMapping(value="/detail/{goodsId}")
 	@ResponseBody
 	public ResultVO<GoodsDetailVo> detail(SeckillUser user, @PathVariable("goodsId") Long goodsId) {
 		// page static, only have dynamic data
@@ -81,13 +81,13 @@ public class GoodsController {
 		int seckillStatus = 0;
 		int remainSeconds = 0;
 		if (curTime < startTime) {
-			seckillStatus = Const.SeckillStatusEnum.NOT_BEGIN.getCode();
+			seckillStatus = Const.SeckillStatus.NOT_BEGIN.getCode();
 			remainSeconds = (int) ((startTime - curTime) / 1000);
 		} else if (curTime > endTime) {
-			seckillStatus = Const.SeckillStatusEnum.OVER.getCode();
+			seckillStatus = Const.SeckillStatus.OVER.getCode();
 			remainSeconds = -1;
 		} else {
-			seckillStatus = Const.SeckillStatusEnum.ON.getCode();
+			seckillStatus = Const.SeckillStatus.ON.getCode();
 			remainSeconds = 0;
 		}
 		

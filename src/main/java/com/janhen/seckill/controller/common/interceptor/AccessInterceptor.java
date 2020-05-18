@@ -1,5 +1,6 @@
 package com.janhen.seckill.controller.common.interceptor;
 
+import com.janhen.seckill.annotation.AccessLimit;
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.AccessKey;

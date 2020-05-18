@@ -2,12 +2,12 @@ package com.janhen.seckill.controller;
 
 import com.janhen.seckill.common.ResultEnum;
 import com.janhen.seckill.common.ResultVO;
-import com.janhen.seckill.common.rabbitmq.MqSender;
-import com.janhen.seckill.common.rabbitmq.SeckillMessage;
+import com.janhen.seckill.mq.MqSender;
+import com.janhen.seckill.mq.SeckillMessage;
 import com.janhen.seckill.common.redis.RedisService;
 import com.janhen.seckill.common.redis.key.BasePrefix;
 import com.janhen.seckill.common.redis.key.GoodsKey;
-import com.janhen.seckill.controller.common.interceptor.AccessLimit;
+import com.janhen.seckill.annotation.AccessLimit;
 import com.janhen.seckill.pojo.SeckillOrder;
 import com.janhen.seckill.pojo.SeckillUser;
 import com.janhen.seckill.service.IGoodsService;
@@ -51,9 +51,6 @@ public class SeckillController implements InitializingBean {
 
 	@Autowired
 	RedisService redisService;
-
-	@Autowired
-  MqSender sender;
 
 	// modify concurrentHashMap to hashMap AND not have put operation AND value only modify one time AND init is single thread execute
 	private Map<Long, Boolean> localOverMap;
@@ -139,7 +136,7 @@ public class SeckillController implements InitializingBean {
 
 		// 5.put into message queue
 		SeckillMessage message = new SeckillMessage(user, goodsId);
-		sender.sendSeckillMessage(message);
+		MqSender.sendSeckillMessage(message);
 		return ResultVO.success(0);
 	}
 

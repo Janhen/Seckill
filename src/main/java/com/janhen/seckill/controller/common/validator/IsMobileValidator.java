@@ -1,5 +1,6 @@
 package com.janhen.seckill.controller.common.validator;
 
+import com.janhen.seckill.annotation.IsMobile;
 import com.janhen.seckill.util.ValidatorUtil;
 import org.springframework.util.StringUtils;
 
