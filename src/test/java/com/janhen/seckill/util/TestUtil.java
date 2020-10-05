@@ -15,14 +15,13 @@ import java.util.Date;
 import java.util.List;
 
 public class TestUtil {
-
   private static final String LOGIN_URL = "http://localhost:8082/user/do_login2";
 
   private static final String FILE_PATH = "D:/tokens.txt";
 
   private static void createUser(int count) throws Exception {
     List<SeckillUser> users = new ArrayList<>(count);
-    //生成用户
+    // 生成用户
     for (int i = 0; i < count; i++) {
       SeckillUser user = new SeckillUser();
       user.setId(KeyUtil.geneUserId());
@@ -34,7 +33,7 @@ public class TestUtil {
       users.add(user);
     }
     System.out.println("create user");
-    //插入数据库
+    // 插入数据库
     Connection conn = DBUtil.getConn();
     String sql = "INSERT INTO seckill_user(login_count, nickname, register_date, salt, password, id) VALUES (?,?,?,?,?,?)";
     PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -53,8 +52,7 @@ public class TestUtil {
     conn.close();
     System.out.println("insert to db");
 
-
-    //登录，生成token
+    // 登录，生成token
 
     File file = new File(FILE_PATH);
     if (file.exists()) {
@@ -71,7 +69,8 @@ public class TestUtil {
       co.setRequestMethod("POST");
       co.setDoOutput(true);
       OutputStream out = co.getOutputStream();
-      String params = "mobile=" + user.getId() + "&password=" + MD5Util.inputPassToFormPass("123456");
+      String params = "mobile=" + user.getId() + "&password="
+          + MD5Util.inputPassToFormPass("123456");
       out.write(params.getBytes());
       out.flush();
 

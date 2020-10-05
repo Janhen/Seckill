@@ -29,6 +29,6 @@ public class RequestLogAspect {
   public void beforeMethod(JoinPoint joinPoint) {
     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
     log.info("URL: {}", request.getRequestURL());
-    log.info("IP: {}", request.getRemoteAddr().toString());
+    log.info("IP: {}", request.getRemoteAddr());
   }
 }
